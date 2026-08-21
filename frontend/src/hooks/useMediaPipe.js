@@ -34,12 +34,21 @@ export function useMediaPipe(webcamRef, onResult, overlayCanvasRef) {
         setLoadProgress(10)
 
         // Dynamically load MediaPipe to avoid SSR issues
-        const { Hands, HAND_CONNECTIONS } = await import('@mediapipe/hands')
+        const mpHands = await import('@mediapipe/hands')
+        // Safe check for Hands exports (named, default, or global window fallback)
+        const Hands = mpHands.Hands || (mpHands.default && mpHands.default.Hands) || window.Hands
+        const HAND_CONNECTIONS = mpHands.HAND_CONNECTIONS || (mpHands.default && mpHands.default.HAND_CONNECTIONS) || window.HAND_CONNECTIONS
+
         setLoadProgress(40)
 
         if (cancelled) return
 
-        const drawingUtils = await import('@mediapipe/drawing_utils')
+        const mpDrawingUtils = await import('@mediapipe/drawing_utils')
+        // Safe check for drawing_utils exports (named, default, or global window fallback)
+        const drawingUtils = mpDrawingUtils.drawConnectors 
+          ? mpDrawingUtils 
+          : ((mpDrawingUtils.default && mpDrawingUtils.default.drawConnectors) ? mpDrawingUtils.default : window)
+
         setLoadProgress(60)
 
         if (cancelled) return
