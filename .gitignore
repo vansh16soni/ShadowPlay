@@ -34,5 +34,16 @@ Thumbs.db
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+.sw?
 deployment_guide.md
+
+# API Keys & Secrets
+*key*
+*token*
+*secret*
+credentials*
+*.key
+*.pem
+*.pfx
+*.cer
+*.crt

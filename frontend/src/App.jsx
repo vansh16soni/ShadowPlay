@@ -9,6 +9,7 @@ import BattlePanel from './components/BattlePanel'
 import SpeedrunPanel from './components/SpeedrunPanel'
 import PlaySetupModal from './components/PlaySetupModal'
 import SplashScreen from './components/SplashScreen'
+import Starfield from './components/Starfield'
 import { GESTURE_INFO, GESTURE_NAMES, GESTURE_ANIMALS, GESTURE_THINGS } from './utils/gestureClassifier'
 import { playGestureChange, playSuccess, playError, playChallengStart } from './utils/sounds'
 import { startChallenge, saveScore, submitAttempt, syncOfflineScores } from './utils/api'
@@ -116,6 +117,17 @@ export default function App() {
   const speedTimerRef = useRef(null)
   const targetCompletedRef = useRef(false)
 
+  const latestGestureRef = useRef(gesture)
+  const latestVulRef = useRef(battleVulnerability)
+
+  useEffect(() => {
+    latestGestureRef.current = gesture
+  }, [gesture])
+
+  useEffect(() => {
+    latestVulRef.current = battleVulnerability
+  }, [battleVulnerability])
+
   // Sync offline scores on startup and online detection
   useEffect(() => {
     syncOfflineScores().catch(() => {})
@@ -195,6 +207,16 @@ export default function App() {
     }
   }
 
+  // Handle player defeat (HP reaches 0)
+  useEffect(() => {
+    if (gameMode === 'battle' && battleState === 'playing' && playerHp === 0) {
+      setBattleState('gameover')
+      playError()
+      speak('Defeat! The shadow beast prevailed.')
+      saveScore(GUEST_ID, battleScore)
+    }
+  }, [playerHp, gameMode, battleState, battleScore])
+
   // Count down boss attack timer
   useEffect(() => {
     if (gameMode !== 'battle' || battleState !== 'playing') return
@@ -204,24 +226,21 @@ export default function App() {
         if (t <= 1) {
           // Boss attacks player!
           const currentBoss = BOSS_LIST[bossIndex]
+          const currentVul = latestVulRef.current
+          const currentGest = latestGestureRef.current
           
           if (sessionId) {
             submitAttempt({
               sessionId,
-              gesturePrompt: battleVulnerability,
-              userGesture: gesture || 'none',
+              gesturePrompt: currentVul,
+              userGesture: currentGest || 'none',
               isCorrect: false
             }).catch(() => {})
           }
 
           setPlayerHp((prevHp) => {
             const nextHp = Math.max(0, prevHp - 20)
-            if (nextHp === 0) {
-              setBattleState('gameover')
-              playError()
-              speak('Defeat! The shadow beast prevailed.')
-              saveScore(GUEST_ID, battleScore)
-            } else {
+            if (nextHp > 0) {
               setShakePlayer(true)
               setTimeout(() => setShakePlayer(false), 500)
               playError()
@@ -237,7 +256,7 @@ export default function App() {
     }, 1000)
 
     return () => clearInterval(battleTimerRef.current)
-  }, [gameMode, battleState, bossIndex, battleScore, sessionId, battleVulnerability, gesture]) // eslint-disable-line
+  }, [gameMode, battleState, bossIndex, sessionId]) // eslint-disable-line
 
   // Check if player is holding the correct gesture to attack
   useEffect(() => {
@@ -364,26 +383,26 @@ export default function App() {
     }
   }
 
+  // Watch for speedrun game over
+  useEffect(() => {
+    if (gameMode === 'speedrun' && speedState === 'playing' && speedTimer === 0) {
+      setSpeedState('gameover')
+      playError()
+      speak(`Time is up! You scored ${speedScore} points.`)
+      saveScore(GUEST_ID, speedScore)
+    }
+  }, [speedTimer, gameMode, speedState, speedScore])
+
   // Count down speedrun timer
   useEffect(() => {
     if (gameMode !== 'speedrun' || speedState !== 'playing') return
 
     speedTimerRef.current = setInterval(() => {
-      setSpeedTimer((t) => {
-        if (t <= 1) {
-          clearInterval(speedTimerRef.current)
-          setSpeedState('gameover')
-          playError()
-          speak(`Time is up! You scored ${speedScore} points.`)
-          saveScore(GUEST_ID, speedScore)
-          return 0
-        }
-        return t - 1
-      })
+      setSpeedTimer((t) => Math.max(0, t - 1))
     }, 1000)
 
     return () => clearInterval(speedTimerRef.current)
-  }, [gameMode, speedState, speedScore]) // eslint-disable-line
+  }, [gameMode, speedState])
 
   // Check gesture match for speedrun
   useEffect(() => {
@@ -446,19 +465,22 @@ export default function App() {
 
   if (!gameStarted) {
     return (
-      <>
-        <SplashScreen onPlayClick={() => setIsSetupOpen(true)} />
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', zIndex: 1, position: 'relative' }}>
+        <Starfield theme={theme} />
+        <SplashScreen onPlayClick={() => setIsSetupOpen(true)} theme={theme} />
         <PlaySetupModal 
           isOpen={isSetupOpen}
           onClose={() => setIsSetupOpen(false)}
           onStartGame={handleStartGame}
         />
-      </>
+      </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', zIndex: 1 }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', zIndex: 1, position: 'relative' }}>
+      <Starfield theme={theme} />
+
       {/* Glow Orbs background */}
       <div className="glow-orb" style={{ top: '10%', left: '5%' }}></div>
       <div className="glow-orb glow-orb-cyan" style={{ bottom: '15%', right: '10%' }}></div>

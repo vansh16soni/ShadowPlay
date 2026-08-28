@@ -1,74 +1,100 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Grotesk:wght@500;700&family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
   --font-title: 'Space Grotesk', sans-serif;
   --font-body: 'Outfit', sans-serif;
 }
 
-/* Default / Dark Theme */
+/* Default / Dark Theme - Space Gravity Theme */
 :root, [data-theme="dark"] {
-  --bg: #0d0605;
-  --bg-gradient: radial-gradient(circle at 50% 50%, #2f120c 0%, #0d0605 100%);
-  --surface: rgba(28, 10, 8, 0.65);
-  --surface-hover: rgba(45, 17, 13, 0.8);
-  --surface-active: rgba(62, 24, 18, 0.9);
-  --border: rgba(251, 191, 36, 0.12);
-  --border-glow: rgba(239, 68, 68, 0.35);
+  --bg: #05020c;
+  --bg-gradient: radial-gradient(circle at 50% 50%, #160c2b 0%, #05020c 100%);
+  --surface: rgba(17, 10, 36, 0.55);
+  --surface-hover: rgba(30, 18, 60, 0.7);
+  --surface-active: rgba(45, 27, 90, 0.85);
+  --border: rgba(167, 139, 250, 0.15);
+  --border-glow: rgba(34, 211, 238, 0.45);
   
   /* Navigation Variables */
-  --nav-bg: rgba(18, 8, 6, 0.8);
-  --sidebar-bg: rgba(13, 6, 5, 0.45);
+  --nav-bg: rgba(8, 4, 20, 0.7);
+  --sidebar-bg: rgba(5, 2, 12, 0.35);
   --nav-btn-bg: rgba(255, 255, 255, 0.04);
   --nav-btn-hover: rgba(255, 255, 255, 0.09);
   
-  --accent-purple: #fbbf24; /* gold */
-  --accent-cyan: #f97316;   /* orange */
-  --accent-pink: #ef4444;   /* red */
-  --accent-green: #eab308;  /* gold */
-  --accent-orange: #f97316; /* orange */
-  --accent-red: #ef4444;    /* red */
-  --accent-gold: #fbbf24;   /* gold */
+  --accent-purple: #a78bfa; /* cosmic purple */
+  --accent-cyan: #22d3ee;   /* cosmic cyan */
+  --accent-pink: #f472b6;   /* nebula pink */
+  --accent-green: #34d399;  /* aurora green */
+  --accent-orange: #fb923c; /* solar orange */
+  --accent-red: #f87171;    /* pulsar red */
+  --accent-gold: #fbbf24;   /* star gold */
   
-  --text: #fdfaf7;
+  --text: #f5f3ff;
   --text-dim: #cbd5e1;
   --text-muted: #94a3b8;
   
-  --shadow-glow: 0 0 20px rgba(239, 68, 68, 0.3);
-  --shadow-glow-cyan: 0 0 20px rgba(249, 115, 22, 0.3);
-  --shadow-glow-pink: 0 0 20px rgba(251, 191, 36, 0.3);
+  --shadow-glow: 0 0 25px rgba(139, 92, 246, 0.25);
+  --shadow-glow-cyan: 0 0 25px rgba(6, 182, 212, 0.25);
+  --shadow-glow-pink: 0 0 25px rgba(236, 72, 153, 0.25);
+  --panel-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+
+  --spotlight-gradient: radial-gradient(circle, rgba(167, 139, 250, 0.08) 0%, rgba(34, 211, 238, 0.03) 40%, transparent 70%);
+
+  /* Background grid configuration for dark theme - gravity waves */
+  --bg-grid-image: 
+    radial-gradient(circle at 50% 50%, transparent 45%, rgba(139, 92, 246, 0.02) 46%, rgba(139, 92, 246, 0.02) 47%, transparent 48%),
+    radial-gradient(circle at 50% 50%, transparent 65%, rgba(34, 211, 238, 0.015) 66%, rgba(34, 211, 238, 0.015) 67%, transparent 68%),
+    linear-gradient(rgba(139, 92, 246, 0.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.01) 1px, transparent 1px);
+  --bg-grid-size: 600px 600px, 800px 800px, 60px 60px, 60px 60px;
+  --bg-grid-animation: gravityPulse 25s infinite linear;
 }
 
-/* Bright / Light Theme */
+/* Bright / Light Theme - Retro Arcade Theme */
 [data-theme="light"] {
-  --bg: #fffbf7;
-  --bg-gradient: radial-gradient(circle at 50% 50%, #fef3c7 0%, #fffbf7 100%);
-  --surface: rgba(254, 243, 199, 0.7);
-  --surface-hover: rgba(253, 230, 138, 0.85);
-  --surface-active: rgba(252, 211, 77, 0.95);
-  --border: rgba(249, 115, 22, 0.25);
-  --border-glow: rgba(239, 68, 68, 0.5);
+  --font-title: 'Share Tech Mono', monospace;
+  --font-body: 'Share Tech Mono', monospace;
+
+  --bg: #f8f5ee;
+  --bg-gradient: radial-gradient(circle at 50% 50%, #fffdf9 0%, #ede6d8 100%);
+  --surface: #ffffff;
+  --surface-hover: #faf6ee;
+  --surface-active: #f2ebd9;
+  --border: #1e1e1e;
+  --border-glow: #ea580c;
   
   /* Navigation Variables */
-  --nav-bg: rgba(255, 251, 247, 0.85);
-  --sidebar-bg: rgba(254, 243, 199, 0.35);
-  --nav-btn-bg: rgba(67, 20, 7, 0.04);
-  --nav-btn-hover: rgba(67, 20, 7, 0.08);
+  --nav-bg: rgba(248, 245, 238, 0.95);
+  --sidebar-bg: #ede6d8;
+  --nav-btn-bg: rgba(30, 30, 30, 0.05);
+  --nav-btn-hover: rgba(30, 30, 30, 0.1);
   
-  --accent-purple: #d97706; /* dark gold */
-  --accent-cyan: #ea580c;   /* dark orange */
-  --accent-pink: #dc2626;   /* dark red */
-  --accent-green: #ca8a04;  /* dark gold */
-  --accent-orange: #ea580c; /* dark orange */
-  --accent-red: #dc2626;    /* dark red */
-  --accent-gold: #d97706;   /* dark gold */
+  --accent-purple: #7c3aed; /* retro violet */
+  --accent-cyan: #0891b2;   /* retro teal */
+  --accent-pink: #db2777;   /* retro magenta */
+  --accent-green: #16a34a;  /* retro green */
+  --accent-orange: #ea580c; /* retro orange */
+  --accent-red: #dc2626;    /* retro red */
+  --accent-gold: #ca8a04;   /* retro gold */
   
-  --text: #431407;
-  --text-dim: #4b5563;
-  --text-muted: #6b7280;
+  --text: #1e1e1e;
+  --text-dim: #333333;
+  --text-muted: #555555;
   
-  --shadow-glow: 0 0 20px rgba(239, 68, 68, 0.2);
-  --shadow-glow-cyan: 0 0 20px rgba(249, 115, 22, 0.2);
-  --shadow-glow-pink: 0 0 20px rgba(251, 191, 36, 0.2);
+  --shadow-glow: 4px 4px 0px #1e1e1e;
+  --shadow-glow-cyan: 4px 4px 0px #ea580c;
+  --shadow-glow-pink: 4px 4px 0px #ca8a04;
+  --panel-shadow: 6px 6px 0px #1e1e1e;
+
+  --spotlight-gradient: radial-gradient(circle, rgba(234, 88, 12, 0.08) 0%, rgba(202, 138, 4, 0.04) 40%, transparent 70%);
+
+  /* Background grid configuration for light theme - retro CRT grid */
+  --bg-grid-image: 
+    linear-gradient(rgba(30, 30, 30, 0.012) 50%, transparent 50%),
+    linear-gradient(rgba(234, 88, 12, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(234, 88, 12, 0.04) 1px, transparent 1px);
+  --bg-grid-size: 100% 4px, 40px 40px, 40px 40px;
+  --bg-grid-animation: none;
 }
 
 * {
@@ -88,18 +114,18 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
-/* Cyberpunk grid background pattern */
+/* Dynamic gravity waves & grid background pattern */
 body::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: 
-    linear-gradient(rgba(239, 68, 68, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(239, 68, 68, 0.02) 1px, transparent 1px);
-  background-size: 40px 40px;
+  background-image: var(--bg-grid-image);
+  background-size: var(--bg-grid-size);
   background-position: center;
   pointer-events: none;
   z-index: 0;
+  animation: var(--bg-grid-animation);
+  transition: opacity 0.5s ease;
 }
 
 h1, h2, h3, h4 {
@@ -126,14 +152,14 @@ button:focus-visible {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(239, 68, 68, 0.2);
-  border-radius: 99px;
+  background: var(--border);
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(239, 68, 68, 0.4);
+  background: var(--accent-orange);
 }
 
 /* Ambient glow particles */
@@ -159,14 +185,23 @@ button:focus-visible {
   background: var(--surface);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 16px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-  transition: border-color 0.3s, box-shadow 0.3s;
+  box-shadow: var(--panel-shadow);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
 .glass-panel:hover {
   border-color: var(--border-glow);
+}
+
+[data-theme="light"] .glass-panel {
+  border-radius: 6px;
+}
+
+[data-theme="light"] .glass-panel:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px #1e1e1e;
 }
 
 /* Animations */
@@ -227,4 +262,109 @@ button:focus-visible {
 @keyframes livePulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.3); opacity: 0.4; }
+}
+
+/* Cosmic Space Gravity Theme Animations */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes gravityPulse {
+  0% {
+    background-size: 600px 600px, 800px 800px, 60px 60px, 60px 60px;
+  }
+  50% {
+    background-size: 640px 640px, 840px 840px, 60px 60px, 60px 60px;
+    opacity: 0.85;
+  }
+  100% {
+    background-size: 600px 600px, 800px 800px, 60px 60px, 60px 60px;
+  }
+}
+
+@keyframes shootingStar1 {
+  0% {
+    transform: translate(0, 0) rotate(-45deg) scale(0);
+    opacity: 0;
+  }
+  1% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(-45deg) scale(1);
+  }
+  10% {
+    transform: translate(-400px, 400px) rotate(-45deg) scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-400px, 400px) rotate(-45deg) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes shootingStar2 {
+  0% {
+    transform: translate(0, 0) rotate(-45deg) scale(0);
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(-45deg) scale(1);
+  }
+  15% {
+    transform: translate(-500px, 500px) rotate(-45deg) scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-500px, 500px) rotate(-45deg) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
+/* Retro Bright Theme Specific Overrides */
+[data-theme="light"] * {
+  text-shadow: none !important;
+}
+
+[data-theme="light"] button {
+  border-radius: 6px !important;
+  border: 2px solid var(--border) !important;
+  box-shadow: 2px 2px 0px var(--border) !important;
+}
+
+[data-theme="light"] button:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--border) !important;
+}
+
+[data-theme="light"] button:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border) !important;
+}
+
+/* Make sure setup elements are crisp and blocky */
+[data-theme="light"] div[style*="borderRadius: '12px'"] {
+  border-radius: 6px !important;
+}
+
+/* Header badge shadow styling */
+[data-theme="light"] header div[style*="boxShadow"] {
+  box-shadow: 3px 3px 0px var(--border) !important;
+  border: 2px solid var(--border) !important;
+  border-radius: 6px !important;
+}
+
+[data-theme="light"] header span[style*="background"] {
+  border-radius: 4px !important;
+  box-shadow: 1px 1px 0px var(--border) !important;
 }

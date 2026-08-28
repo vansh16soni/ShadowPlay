@@ -96,7 +96,7 @@ export default function ShadowCanvas({ gesture, center, flash }) {
         maxWidth: '500px',
         height: 'auto',
         borderRadius: '16px',
-        border: '1px solid rgba(255,255,255,0.07)',
+        border: '2px solid var(--border)',
         display: 'block',
       }}
       aria-label={gesture ? `Shadow of ${gesture}` : 'Shadow canvas – no gesture detected'}

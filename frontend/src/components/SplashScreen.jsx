@@ -1,11 +1,11 @@
 import React from 'react'
 
-export default function SplashScreen({ onPlayClick }) {
+export default function SplashScreen({ onPlayClick, theme }) {
   return (
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: '#040209',
+      background: 'transparent',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -21,7 +21,7 @@ export default function SplashScreen({ onPlayClick }) {
         transform: 'translate(-50%, -50%)',
         width: '120vw',
         height: '120vh',
-        background: 'radial-gradient(circle, rgba(251, 191, 36, 0.05) 0%, rgba(236, 72, 153, 0.02) 40%, transparent 70%)',
+        background: 'var(--spotlight-gradient)',
         opacity: 0.8,
         pointerEvents: 'none',
       }} />

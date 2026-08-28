@@ -37,7 +37,7 @@ export default function WebcamFeed({ onHandResult }) {
           borderRadius: 16,
           opacity: loading ? 0.4 : 1,
           transition: 'opacity 0.3s',
-          border: '1px solid rgba(255,255,255,0.07)',
+          border: '2px solid var(--border)',
           display: 'block',
         }}
         aria-label="Webcam feed"
@@ -66,7 +66,7 @@ export default function WebcamFeed({ onHandResult }) {
           background: 'rgba(10,10,15,0.7)',
           borderRadius: 16, gap: 12,
         }}>
-          <div style={{ color: 'var(--accent)', fontFamily: 'Creepster, cursive', fontSize: 20 }}>
+          <div style={{ color: 'var(--accent-orange)', fontFamily: 'var(--font-title)', fontSize: 20 }}>
             Loading AI...
           </div>
           <div style={{
@@ -75,7 +75,7 @@ export default function WebcamFeed({ onHandResult }) {
           }}>
             <div style={{
               width: `${loadProgress}%`, height: '100%',
-              background: 'var(--accent)', borderRadius: 4,
+              background: 'var(--accent-orange)', borderRadius: 4,
               transition: 'width 0.3s ease',
             }} />
           </div>
