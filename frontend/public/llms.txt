@@ -1,0 +1,19 @@
+# ShadowPlay
+> Real-Time Browser Hand Shadow Puppet Recognition Studio
+
+## Summary
+ShadowPlay is an interactive, browser-based computer vision application that recognizes hand shadow gestures via webcam and renders animated vector silhouette puppets onto a virtual projection surface in real time.
+
+## Key Principles & Technology
+- Privacy First Architecture: Hand tracking (Google MediaPipe Hands) runs strictly client-side via WebAssembly in browser RAM. Webcam video frames are never transmitted, recorded, or uploaded to any remote server.
+- Supported Hand Gestures: 21 anatomical silhouette shapes across animals (Rabbit, Dog, Bird, Butterfly, Snake, Goat, Fox, Horse, Spider, Donkey, Pig, Lizard, Eagle, Deer) and objects (Scissors, Glasses, Cup, Crown, Airplane, Heart, Sword).
+- Frontend Stack: React 18, HTML5 Canvas API, Web Audio API, Web Speech API, Vanilla CSS.
+- Backend Stack: Node.js, Express, MongoDB (minimal anonymous session tracking and leaderboard).
+
+## Legal & Compliance
+- Data Minimization: Anonymous random UUID stored in browser localStorage. No personally identifiable information (PII) required.
+- India DPDP Act 2023: Full data principal rights supported (access, correction, erasure).
+- Privacy Policy: https://shadowplay.app/privacy
+- Terms of Service: https://shadowplay.app/terms
+- Cookie Policy: https://shadowplay.app/cookies
+- Grievance Redressal: grievance@shadowplay.app

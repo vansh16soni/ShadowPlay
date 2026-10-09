@@ -46,10 +46,19 @@ export async function saveScore(guestId, score) {
     // offline fallback
   }
 
-  // Preserve in localStorage as local fallback
+  // Preserve in localStorage as local fallback (deduplicated by guestId with highest score)
   const existing = JSON.parse(localStorage.getItem('shadowplay_scores') || '[]')
-  // Avoid duplicate entries if possible, or just push
-  existing.push({ guestId, score, date: new Date().toISOString(), synced })
+  const foundIndex = existing.findIndex(entry => entry.guestId === guestId)
+  if (foundIndex >= 0) {
+    existing[foundIndex] = {
+      guestId,
+      score: Math.max(existing[foundIndex].score, score),
+      date: new Date().toISOString(),
+      synced,
+    }
+  } else {
+    existing.push({ guestId, score, date: new Date().toISOString(), synced })
+  }
   existing.sort((a, b) => b.score - a.score)
   localStorage.setItem('shadowplay_scores', JSON.stringify(existing.slice(0, 20)))
 }
@@ -85,9 +94,17 @@ export async function getLeaderboard(limit = 10) {
   try {
     return await apiFetch(`/api/leaderboard?limit=${limit}`)
   } catch {
-    // Fallback: localStorage
+    // Fallback: localStorage deduplicated by guestId
     const stored = JSON.parse(localStorage.getItem('shadowplay_scores') || '[]')
-    return stored.slice(0, limit)
+    const unique = []
+    const seen = new Set()
+    for (const item of stored) {
+      if (!seen.has(item.guestId)) {
+        seen.add(item.guestId)
+        unique.push(item)
+      }
+    }
+    return unique.slice(0, limit)
   }
 }
 

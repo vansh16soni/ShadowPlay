@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { SHADOW_DRAWERS } from '../utils/shadowDrawers'
 
 const CANVAS_W = 480
@@ -8,83 +8,89 @@ export default function ShadowCanvas({ gesture, center, flash }) {
   const canvasRef = useRef(null)
   const flashRef = useRef(false)
   const animRef = useRef(null)
-  const prevGestureRef = useRef(null)
+  const latestPropsRef = useRef({ gesture, center })
 
-  const draw = useCallback(() => {
+  useEffect(() => {
+    latestPropsRef.current = { gesture, center }
+  }, [gesture, center])
+
+  useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
 
-    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H)
+    const render = () => {
+      ctx.clearRect(0, 0, CANVAS_W, CANVAS_H)
 
-    // Background – dark wall texture
-    const grad = ctx.createRadialGradient(
-      CANVAS_W / 2, CANVAS_H / 2, 60,
-      CANVAS_W / 2, CANVAS_H / 2, CANVAS_W * 0.8
-    )
-    grad.addColorStop(0, '#1a1a2e')
-    grad.addColorStop(1, '#0d0d14')
-    ctx.fillStyle = grad
-    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
+      // Neutral dark wall projection background
+      const grad = ctx.createRadialGradient(
+        CANVAS_W / 2, CANVAS_H / 2, 60,
+        CANVAS_W / 2, CANVAS_H / 2, CANVAS_W * 0.8
+      )
+      grad.addColorStop(0, '#172033')
+      grad.addColorStop(1, '#0b1120')
+      ctx.fillStyle = grad
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
 
-    // Spotlight effect (with candlelight flicker micro-animation)
-    const flicker = 1 + (Math.sin(Date.now() * 0.005) * 0.015) + (Math.random() * 0.008)
-    const spotGrad = ctx.createRadialGradient(
-      CANVAS_W / 2, CANVAS_H / 2, 0,
-      CANVAS_W / 2, CANVAS_H / 2, CANVAS_W * 0.55 * flicker
-    )
-    spotGrad.addColorStop(0, 'rgba(255,230,120,0.09)')
-    spotGrad.addColorStop(0.5, 'rgba(255,200,80,0.035)')
-    spotGrad.addColorStop(1, 'rgba(0,0,0,0)')
-    ctx.fillStyle = spotGrad
-    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
+      // Spotlight illumination
+      const spotGrad = ctx.createRadialGradient(
+        CANVAS_W / 2, CANVAS_H / 2, 0,
+        CANVAS_W / 2, CANVAS_H / 2, CANVAS_W * 0.55
+      )
+      spotGrad.addColorStop(0, 'rgba(255, 235, 180, 0.08)')
+      spotGrad.addColorStop(0.5, 'rgba(255, 215, 140, 0.03)')
+      spotGrad.addColorStop(1, 'rgba(0, 0, 0, 0)')
+      ctx.fillStyle = spotGrad
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
 
-    // Draw shadow if gesture + center known
-    if (gesture && center && SHADOW_DRAWERS[gesture]) {
-      const px = center.x * CANVAS_W
-      const py = center.y * CANVAS_H
-      const scale = 1.2
+      const { gesture: currentGesture, center: currentCenter } = latestPropsRef.current
 
-      // Soft ground shadow
-      ctx.save()
-      ctx.shadowBlur = 30
-      ctx.shadowColor = 'rgba(0,0,0,0.5)'
-      SHADOW_DRAWERS[gesture](ctx, px, py, scale)
-      ctx.restore()
+      // Draw shadow if gesture and center known
+      // Note: Invert X (1 - currentCenter.x) to match mirrored user camera coordinate
+      if (currentGesture && currentCenter && SHADOW_DRAWERS[currentGesture]) {
+        const px = (1 - currentCenter.x) * CANVAS_W
+        const py = currentCenter.y * CANVAS_H
+        const scale = 1.2
 
-      // Flash overlay on correct detection
-      if (flashRef.current) {
         ctx.save()
-        ctx.globalAlpha = 0.25
-        ctx.fillStyle = '#ffffff'
-        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
+        ctx.shadowBlur = 24
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)'
+        SHADOW_DRAWERS[currentGesture](ctx, px, py, scale)
         ctx.restore()
+
+        if (flashRef.current) {
+          ctx.save()
+          ctx.globalAlpha = 0.2
+          ctx.fillStyle = '#ffffff'
+          ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
+          ctx.restore()
+        }
+      } else {
+        // No hand: clean text prompt (NO emojis)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'
+        ctx.font = '14px Inter, sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('Position hand in camera frame to cast shadow', CANVAS_W / 2, CANVAS_H / 2)
       }
-    } else {
-      // No hand – show hint text
-      ctx.fillStyle = 'rgba(255,255,255,0.12)'
-      ctx.font = '16px Inter'
-      ctx.textAlign = 'center'
-      ctx.fillText('Show your hand to the camera', CANVAS_W / 2, CANVAS_H / 2)
-      ctx.font = '28px serif'
-      ctx.fillText('✋', CANVAS_W / 2, CANVAS_H / 2 + 40)
+
+      animRef.current = requestAnimationFrame(render)
     }
 
-    animRef.current = requestAnimationFrame(draw)
-  }, [gesture, center])
+    animRef.current = requestAnimationFrame(render)
+
+    return () => {
+      if (animRef.current) cancelAnimationFrame(animRef.current)
+    }
+  }, [])
 
   // Trigger flash
   useEffect(() => {
     if (flash) {
       flashRef.current = true
-      setTimeout(() => { flashRef.current = false }, 120)
+      const timer = setTimeout(() => { flashRef.current = false }, 120)
+      return () => clearTimeout(timer)
     }
   }, [flash])
-
-  useEffect(() => {
-    animRef.current = requestAnimationFrame(draw)
-    return () => { if (animRef.current) cancelAnimationFrame(animRef.current) }
-  }, [draw])
 
   return (
     <canvas
@@ -95,11 +101,11 @@ export default function ShadowCanvas({ gesture, center, flash }) {
         width: '100%',
         maxWidth: '500px',
         height: 'auto',
-        borderRadius: '16px',
-        border: '2px solid var(--border)',
+        borderRadius: '4px',
+        border: '1px solid var(--border)',
         display: 'block',
       }}
-      aria-label={gesture ? `Shadow of ${gesture}` : 'Shadow canvas – no gesture detected'}
+      aria-label={gesture ? `Shadow projection: ${gesture}` : 'Shadow projection: no gesture detected'}
     />
   )
 }

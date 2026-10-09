@@ -8,13 +8,13 @@ dist/
 build/
 .cache/
 
-# Environment variables
+# Environment variables & secrets (Never commit secrets!)
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 *.env
+*.env.local
+*.local
 
 # Logs
 npm-debug.log*
@@ -22,10 +22,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+*.log
 
 # OS Files
 .DS_Store
 Thumbs.db
+Desktop.ini
 
 # Editor configurations
 .vscode/
@@ -35,15 +37,18 @@ Thumbs.db
 *.njsproj
 *.sln
 .sw?
+*.swp
+
+# Deployment and internal guides with sensitive notes
 deployment_guide.md
 
-# API Keys & Secrets
-*key*
-*token*
-*secret*
+# API Keys, Tokens & Private Certificates
 credentials*
 *.key
 *.pem
 *.pfx
 *.cer
 *.crt
+*.p12
+id_rsa*
+id_ed25519*

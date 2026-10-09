@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { GESTURE_INFO } from '../utils/gestureClassifier'
 
 const FINGER_GUIDES = {
@@ -153,24 +153,20 @@ const FINGER_GUIDES = {
 
 function FingerDiagram({ name }) {
   const guide = FINGER_GUIDES[name]
-  const info = GESTURE_INFO[name]
+  if (!guide) return null
   return (
-    <div style={{ marginTop: 16 }}>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', justifyContent: 'center', height: 90 }}>
+    <div style={{ marginTop: 14 }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', justifyContent: 'center', height: 80 }}>
         {guide.map(({ finger, state }) => (
-          <div key={finger} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+          <div key={finger} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             <div style={{
-              width: 14, 
-              borderRadius: 6,
-              height: state === 'UP' ? 60 : state === 'OUT' ? 30 : 16,
-              background: state === 'DOWN'
-                ? 'rgba(255,255,255,0.06)'
-                : info.color,
-              boxShadow: state === 'DOWN' ? 'none' : `0 0 12px ${info.color}aa`,
-              transition: 'all 0.3s ease',
-              opacity: state === 'DOWN' ? 0.3 : 1,
+              width: 12, 
+              borderRadius: 2,
+              height: state === 'UP' ? 52 : state === 'OUT' ? 26 : 12,
+              background: state === 'DOWN' ? 'var(--border)' : 'var(--accent)',
+              opacity: state === 'DOWN' ? 0.4 : 1,
             }} />
-            <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>
               {finger.slice(0, 1)}
             </span>
           </div>
@@ -188,96 +184,78 @@ export default function Gallery() {
   )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <h2 style={{ fontSize: 26, color: 'var(--accent-purple)', marginBottom: 8 }}>Gesture Gallery Guide</h2>
-          <p style={{ color: 'var(--text-dim)', fontSize: 14, lineHeight: 1.6 }}>
-            Learn the configurations to cast each shadow shape. Toggle categories to practice animals or common objects.
+          <h2 style={{ fontSize: 22, color: 'var(--text)', marginBottom: 4 }}>Gesture Anatomy Reference</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+            Anatomical finger configurations recognized by the tracking engine. Select a category below.
           </p>
         </div>
         
         {/* Category switcher */}
-        <div style={{
-          display: 'flex',
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid var(--border)',
-          borderRadius: 12,
-          padding: 4,
-          gap: 4
-        }}>
+        <div style={{ display: 'flex', gap: 6 }}>
           <button
             onClick={() => setActiveCategory('animal')}
             style={{
-              padding: '8px 16px',
-              borderRadius: 8,
+              padding: '6px 14px',
+              borderRadius: 4,
               fontSize: 13,
               fontWeight: 600,
-              background: activeCategory === 'animal' ? 'var(--accent-orange)' : 'transparent',
-              color: activeCategory === 'animal' ? '#fff' : 'var(--text-dim)',
-              transition: 'all 0.2s ease'
+              background: activeCategory === 'animal' ? 'var(--accent)' : 'var(--surface)',
+              color: activeCategory === 'animal' ? '#ffffff' : 'var(--text-dim)',
+              borderColor: activeCategory === 'animal' ? 'var(--accent)' : 'var(--border)',
             }}
           >
-            🐕 Animals
+            Animal Silhouettes
           </button>
           <button
             onClick={() => setActiveCategory('thing')}
             style={{
-              padding: '8px 16px',
-              borderRadius: 8,
+              padding: '6px 14px',
+              borderRadius: 4,
               fontSize: 13,
               fontWeight: 600,
-              background: activeCategory === 'thing' ? 'var(--accent-orange)' : 'transparent',
-              color: activeCategory === 'thing' ? '#fff' : 'var(--text-dim)',
-              transition: 'all 0.2s ease'
+              background: activeCategory === 'thing' ? 'var(--accent)' : 'var(--surface)',
+              color: activeCategory === 'thing' ? '#ffffff' : 'var(--text-dim)',
+              borderColor: activeCategory === 'thing' ? 'var(--accent)' : 'var(--border)',
             }}
           >
-            ⚙️ Things
+            Object Silhouettes
           </button>
         </div>
       </div>
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
-        gap: 20,
+        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+        gap: 16,
       }}>
         {filteredGestures.map(([name, info]) => (
           <div key={name} style={{
-            background: 'rgba(255, 255, 255, 0.02)',
+            background: 'var(--surface)',
             border: '1px solid var(--border)',
-            borderRadius: 16,
-            padding: '24px 20px',
+            borderRadius: 4,
+            padding: '18px 16px',
             textAlign: 'center',
-            transition: 'all 0.2s ease-in-out',
-          }}
-            onMouseEnter={e => { 
-              e.currentTarget.style.borderColor = info.color
-              e.currentTarget.style.boxShadow = `0 10px 30px ${info.color}15`
-              e.currentTarget.style.transform = 'translateY(-2px)'
-            }}
-            onMouseLeave={e => { 
-              e.currentTarget.style.borderColor = 'var(--border)'
-              e.currentTarget.style.boxShadow = 'none'
-              e.currentTarget.style.transform = 'none'
-            }}
-          >
-            <div style={{ fontSize: 52, filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.15))' }}>{info.emoji}</div>
-            <h3 style={{ fontSize: 22, color: info.color, marginTop: 8, fontFamily: 'var(--font-title)' }}>{info.label}</h3>
-            <p style={{ color: 'var(--text-dim)', fontSize: 13, marginTop: 6, lineHeight: 1.5, minHeight: 40 }}>{info.description}</p>
+          }}>
+            <h3 style={{ fontSize: 16, color: 'var(--text)', fontWeight: 700 }}>{info.label}</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 4, lineHeight: 1.4, minHeight: 34 }}>{info.description}</p>
 
             <FingerDiagram name={name} />
 
-            <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
-              {FINGER_GUIDES[name].map(({ finger, state }) => (
+            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
+              {FINGER_GUIDES[name]?.map(({ finger, state }) => (
                 <span key={finger} style={{
-                  fontSize: 10, padding: '3px 8px', borderRadius: 20,
-                  background: state === 'DOWN' ? 'rgba(255,255,255,0.03)' : `${info.color}10`,
-                  color: state === 'DOWN' ? 'var(--text-muted)' : info.color,
-                  border: `1px solid ${state === 'DOWN' ? 'transparent' : info.color + '22'}`,
+                  fontSize: 10,
+                  padding: '2px 6px',
+                  borderRadius: 2,
+                  background: state === 'DOWN' ? 'transparent' : 'var(--surface-hover)',
+                  color: state === 'DOWN' ? 'var(--text-muted)' : 'var(--text)',
+                  border: '1px solid var(--border)',
                   fontWeight: 600
                 }}>
-                  {finger} {state === 'UP' ? '↑' : state === 'OUT' ? '→' : '↓'}
+                  {finger}: {state}
                 </span>
               ))}
             </div>
@@ -286,16 +264,16 @@ export default function Gallery() {
       </div>
 
       <div style={{
-        marginTop: 8, padding: 20,
-        background: 'rgba(255,255,255,0.01)', borderRadius: 12,
+        padding: 16,
+        background: 'var(--surface)',
+        borderRadius: 4,
         border: '1px solid var(--border)',
       }}>
-        <h3 style={{ fontSize: 16, marginBottom: 8, color: 'var(--text)' }}>💡 Tips for Success</h3>
-        <ul style={{ color: 'var(--text-dim)', fontSize: 13, lineHeight: 1.8, paddingLeft: 20 }}>
-          <li>Align your hand directly in front of the camera visor view, about 30–60cm away.</li>
-          <li>Keep your hand flat parallel to the camera lens. Tilting your wrist forwards or backwards makes depth tracking difficult.</li>
-          <li>If a gesture isn't immediately recognized, check the glowing hand skeleton overlay to see if all 21 points are tracking.</li>
-          <li>Good, direct lighting onto the palm side of your hand improves classification significantly.</li>
+        <h3 style={{ fontSize: 14, marginBottom: 6, color: 'var(--text)' }}>Tracking Guidelines</h3>
+        <ul style={{ color: 'var(--text-dim)', fontSize: 13, lineHeight: 1.6, paddingLeft: 18 }}>
+          <li>Position your hand approximately 30 to 60 cm directly in front of the webcam.</li>
+          <li>Ensure adequate ambient room lighting facing your hand to prevent camera motion blur.</li>
+          <li>Keep fingers separated clearly when casting multi-finger figures such as the Rabbit or Bird.</li>
         </ul>
       </div>
     </div>

@@ -7,6 +7,11 @@ export function useMediaPipe(webcamRef, onResult, overlayCanvasRef) {
   const [loading, setLoading] = useState(true)
   const [loadProgress, setLoadProgress] = useState(0)
   const [error, setError] = useState(null)
+  const onResultRef = useRef(onResult)
+
+  useEffect(() => {
+    onResultRef.current = onResult
+  }, [onResult])
 
   const processFrame = useCallback(async () => {
     if (!handsRef.current) return
@@ -78,7 +83,7 @@ export function useMediaPipe(webcamRef, onResult, overlayCanvasRef) {
             ctx.clearRect(0, 0, canvas.width, canvas.height)
 
             const video = webcamRef.current?.video
-            if (video) {
+            if (video && video.videoWidth > 0 && video.videoHeight > 0) {
               if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
                 canvas.width = video.videoWidth
                 canvas.height = video.videoHeight
@@ -118,9 +123,9 @@ export function useMediaPipe(webcamRef, onResult, overlayCanvasRef) {
               center = getHandCenter(results.multiHandLandmarks[0])
             }
 
-            onResult({ landmarks, gesture, center, detected: true })
+            onResultRef.current?.({ landmarks, gesture, center, detected: true })
           } else {
-            onResult({ landmarks: null, gesture: null, center: null, detected: false })
+            onResultRef.current?.({ landmarks: null, gesture: null, center: null, detected: false })
           }
         })
 

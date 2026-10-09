@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { PracticeIcon, QuestIcon, TimerIcon, CloseIcon } from './Icons'
 
 export default function PlaySetupModal({ isOpen, onClose, onStartGame }) {
   const [mode, setMode] = useState('free') // free | battle | speedrun
@@ -7,227 +8,232 @@ export default function PlaySetupModal({ isOpen, onClose, onStartGame }) {
   if (!isOpen) return null
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      background: 'rgba(5, 3, 8, 0.85)',
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      animation: 'fadeIn 0.25s ease-out',
-    }}>
-      <div className="glass-panel" style={{
-        width: '100%',
-        maxWidth: '560px',
-        padding: '32px',
-        position: 'relative',
-        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-      }}>
+    <div 
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0, 0, 0, 0.75)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        padding: 16
+      }}
+    >
+      <div 
+        className="glass-panel" 
+        style={{
+          width: '100%',
+          maxWidth: '540px',
+          padding: '28px',
+          position: 'relative',
+          boxShadow: '0 12px 32px rgba(0, 0, 0, 0.4)',
+          border: '1px solid var(--border)'
+        }}
+      >
         {/* Close Button */}
         <button 
           onClick={onClose}
+          aria-label="Close configuration modal"
           style={{
             position: 'absolute',
-            top: 20,
-            right: 20,
-            background: 'rgba(255,255,255,0.03)',
-            color: 'var(--text-dim)',
+            top: 18,
+            right: 18,
+            background: 'transparent',
+            color: 'var(--text-muted)',
             border: '1px solid var(--border)',
             width: 32,
             height: 32,
-            borderRadius: '50%',
+            borderRadius: 4,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: 16,
-            fontWeight: 'bold',
-            transition: 'all 0.2s',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = 'var(--accent-pink)'
-            e.currentTarget.style.color = '#fff'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = 'var(--border)'
-            e.currentTarget.style.color = 'var(--text-dim)'
+            cursor: 'pointer'
           }}
         >
-          ✕
+          <CloseIcon size={14} />
         </button>
 
-        <h2 style={{ 
-          fontSize: 26, 
-          fontFamily: 'var(--font-title)', 
-          textAlign: 'center',
-          color: 'var(--text)',
-          marginBottom: 24,
-          background: 'linear-gradient(90deg, var(--accent-orange), var(--accent-gold))',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-        }}>
-          🎮 Configure Play Options
+        <h2 
+          id="modal-title"
+          style={{ 
+            fontSize: 20, 
+            fontWeight: 700, 
+            color: 'var(--text)',
+            marginBottom: 20
+          }}
+        >
+          Configure Practice Session
         </h2>
 
-        {/* STEP 1: SELECT GAME MODE */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.08em' }}>1. CHOOSE YOUR CHALLENGE</span>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        {/* STEP 1: SELECT MODE */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            1. Select Session Mode
+          </span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
             {/* Mode Option: Free Play */}
-            <div 
+            <button
+              type="button"
               onClick={() => setMode('free')}
               style={{
-                border: `1px solid ${mode === 'free' ? 'var(--accent-cyan)' : 'var(--border)'}`,
-                background: mode === 'free' ? 'rgba(6, 182, 212, 0.08)' : 'rgba(255,255,255,0.01)',
-                padding: '12px 8px',
-                borderRadius: '12px',
+                border: `1px solid ${mode === 'free' ? 'var(--accent-orange)' : 'var(--border)'}`,
+                background: mode === 'free' ? 'rgba(217, 119, 6, 0.12)' : 'var(--bg-card)',
+                padding: '14px 10px',
+                borderRadius: 4,
                 cursor: 'pointer',
-                textAlign: 'center',
-                boxShadow: mode === 'free' ? '0 0 15px rgba(6, 182, 212, 0.15)' : 'none',
-                transition: 'all 0.25s ease',
+                textAlign: 'left',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 6
               }}
             >
-              <div style={{ fontSize: 24, marginBottom: 6 }}>🧘</div>
-              <h4 style={{ fontSize: 13, fontWeight: 700, color: mode === 'free' ? 'var(--accent-cyan)' : 'var(--text)' }}>Free Practice</h4>
-              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.3 }}>Learn and explore gestures without clock pressure.</p>
-            </div>
+              <div style={{ color: mode === 'free' ? 'var(--accent-orange)' : 'var(--text-muted)' }}>
+                <PracticeIcon size={20} />
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Free Practice</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.3 }}>Untimed gesture training and recognition.</span>
+            </button>
 
             {/* Mode Option: Shadow Quest */}
-            <div 
+            <button
+              type="button"
               onClick={() => setMode('battle')}
               style={{
-                border: `1px solid ${mode === 'battle' ? 'var(--accent-purple)' : 'var(--border)'}`,
-                background: mode === 'battle' ? 'rgba(139, 92, 246, 0.08)' : 'rgba(255,255,255,0.01)',
-                padding: '12px 8px',
-                borderRadius: '12px',
+                border: `1px solid ${mode === 'battle' ? 'var(--accent-orange)' : 'var(--border)'}`,
+                background: mode === 'battle' ? 'rgba(217, 119, 6, 0.12)' : 'var(--bg-card)',
+                padding: '14px 10px',
+                borderRadius: 4,
                 cursor: 'pointer',
-                textAlign: 'center',
-                boxShadow: mode === 'battle' ? '0 0 15px rgba(139, 92, 246, 0.15)' : 'none',
-                transition: 'all 0.25s ease',
+                textAlign: 'left',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 6
               }}
             >
-              <div style={{ fontSize: 24, marginBottom: 6 }}>⚔️</div>
-              <h4 style={{ fontSize: 13, fontWeight: 700, color: mode === 'battle' ? 'var(--accent-purple)' : 'var(--text)' }}>Shadow Quest</h4>
-              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.3 }}>Defeat shadow beasts using vulnerabilities.</p>
-            </div>
+              <div style={{ color: mode === 'battle' ? 'var(--accent-orange)' : 'var(--text-muted)' }}>
+                <QuestIcon size={20} />
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Shadow Quest</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.3 }}>Match signs against adversarial patterns.</span>
+            </button>
 
             {/* Mode Option: Time Attack */}
-            <div 
+            <button
+              type="button"
               onClick={() => setMode('speedrun')}
               style={{
-                border: `1px solid ${mode === 'speedrun' ? 'var(--accent-pink)' : 'var(--border)'}`,
-                background: mode === 'speedrun' ? 'rgba(236, 72, 153, 0.08)' : 'rgba(255,255,255,0.01)',
-                padding: '12px 8px',
-                borderRadius: '12px',
+                border: `1px solid ${mode === 'speedrun' ? 'var(--accent-orange)' : 'var(--border)'}`,
+                background: mode === 'speedrun' ? 'rgba(217, 119, 6, 0.12)' : 'var(--bg-card)',
+                padding: '14px 10px',
+                borderRadius: 4,
                 cursor: 'pointer',
-                textAlign: 'center',
-                boxShadow: mode === 'speedrun' ? '0 0 15px rgba(236, 72, 153, 0.15)' : 'none',
-                transition: 'all 0.25s ease',
+                textAlign: 'left',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 6
               }}
             >
-              <div style={{ fontSize: 24, marginBottom: 6 }}>⏱</div>
-              <h4 style={{ fontSize: 13, fontWeight: 700, color: mode === 'speedrun' ? 'var(--accent-pink)' : 'var(--text)' }}>Time Attack</h4>
-              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.3 }}>Copy signs to build streak and add seconds.</p>
-            </div>
+              <div style={{ color: mode === 'speedrun' ? 'var(--accent-orange)' : 'var(--text-muted)' }}>
+                <TimerIcon size={20} />
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Time Attack</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.3 }}>Rapid sign completion with streak bonuses.</span>
+            </button>
           </div>
         </div>
 
         {/* STEP 2: SELECT CATEGORY */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.08em' }}>2. SELECT GESTURE CATEGORY</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            2. Select Gesture Library
+          </span>
           <div style={{
             display: 'flex',
-            background: 'rgba(255,255,255,0.03)',
+            background: 'var(--bg-card)',
             border: '1px solid var(--border)',
-            borderRadius: 12,
-            padding: 4,
+            borderRadius: 4,
+            padding: 3,
             gap: 4
           }}>
             <button 
+              type="button"
               onClick={() => setCategory('animals')}
               style={{
                 flex: 1,
-                padding: '10px 16px',
-                borderRadius: 8,
-                fontSize: 13,
+                padding: '8px 12px',
+                borderRadius: 4,
+                fontSize: 12,
                 fontWeight: 600,
                 background: category === 'animals' ? 'var(--accent-orange)' : 'transparent',
-                color: category === 'animals' ? '#fff' : 'var(--text-dim)',
-                transition: 'all 0.2s ease',
+                color: category === 'animals' ? '#ffffff' : 'var(--text-dim)',
+                border: 'none',
+                cursor: 'pointer'
               }}
             >
-              🐕 Animals
+              Animals
             </button>
             <button 
+              type="button"
               onClick={() => setCategory('things')}
               style={{
                 flex: 1,
-                padding: '10px 16px',
-                borderRadius: 8,
-                fontSize: 13,
+                padding: '8px 12px',
+                borderRadius: 4,
+                fontSize: 12,
                 fontWeight: 600,
                 background: category === 'things' ? 'var(--accent-orange)' : 'transparent',
-                color: category === 'things' ? '#fff' : 'var(--text-dim)',
-                transition: 'all 0.2s ease',
+                color: category === 'things' ? '#ffffff' : 'var(--text-dim)',
+                border: 'none',
+                cursor: 'pointer'
               }}
             >
-              ⚙️ Things
+              Objects
             </button>
             <button 
+              type="button"
               onClick={() => setCategory('all')}
               style={{
                 flex: 1,
-                padding: '10px 16px',
-                borderRadius: 8,
-                fontSize: 13,
+                padding: '8px 12px',
+                borderRadius: 4,
+                fontSize: 12,
                 fontWeight: 600,
                 background: category === 'all' ? 'var(--accent-orange)' : 'transparent',
-                color: category === 'all' ? '#fff' : 'var(--text-dim)',
-                transition: 'all 0.2s ease',
+                color: category === 'all' ? '#ffffff' : 'var(--text-dim)',
+                border: 'none',
+                cursor: 'pointer'
               }}
             >
-              🌀 All Combined
+              All Gestures
             </button>
           </div>
         </div>
 
         {/* Action Button */}
-        <button 
-          onClick={() => onStartGame({ mode, category })}
-          style={{
-            width: '100%',
-            padding: '14px',
-            borderRadius: '12px',
-            fontWeight: 700,
-            background: mode === 'free'
-              ? 'linear-gradient(135deg, var(--accent-cyan), var(--accent-purple))'
-              : mode === 'battle'
-                ? 'linear-gradient(135deg, var(--accent-purple), var(--accent-pink))'
-                : 'linear-gradient(135deg, var(--accent-pink), var(--accent-orange))',
-            color: mode === 'free' ? '#000' : 'var(--text)',
-            fontSize: 16,
-            boxShadow: mode === 'free'
-              ? '0 4px 20px rgba(6, 182, 212, 0.4)'
-              : mode === 'battle'
-                ? '0 4px 20px rgba(139, 92, 246, 0.4)'
-                : '0 4px 20px rgba(236, 72, 153, 0.4)',
-            transition: 'all 0.2s',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.transform = 'translateY(-1px)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.transform = 'none'
-          }}
-        >
-          Begin Shadow Trial 🔥
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button 
+            type="button"
+            onClick={onClose}
+            className="btn btn-secondary"
+            style={{ flex: 1 }}
+          >
+            Cancel
+          </button>
+          <button 
+            type="button"
+            onClick={() => onStartGame({ mode, category })}
+            className="btn btn-primary"
+            style={{ flex: 2 }}
+          >
+            Start Session
+          </button>
+        </div>
       </div>
     </div>
   )

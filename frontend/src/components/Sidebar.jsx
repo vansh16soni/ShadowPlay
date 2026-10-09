@@ -1,6 +1,7 @@
 import React from 'react'
+import { StudioIcon, GuideIcon, TrophyIcon, InfoIcon, ShieldIcon, FileTextIcon } from './Icons'
 
-function SidebarButton({ active, onClick, icon, label }) {
+function SidebarButton({ active, onClick, icon: Icon, label }) {
   return (
     <button 
       onClick={onClick} 
@@ -8,50 +9,52 @@ function SidebarButton({ active, onClick, icon, label }) {
         display: 'flex',
         alignItems: 'center',
         gap: 12,
-        padding: '12px 16px',
-        borderRadius: 8,
-        fontSize: 14,
+        padding: '10px 14px',
+        borderRadius: 4,
+        fontSize: 13,
         fontWeight: 600,
         width: '100%',
         textAlign: 'left',
-        borderLeft: active ? '4px solid var(--accent-orange)' : '4px solid transparent',
-        background: active ? 'linear-gradient(90deg, rgba(249, 115, 22, 0.08) 0%, transparent 100%)' : 'transparent',
-        color: active ? 'var(--accent-orange)' : 'var(--text-dim)',
-      }}
-      onMouseEnter={e => {
-        if (!active) {
-          e.currentTarget.style.background = 'var(--surface-hover)'
-          e.currentTarget.style.color = 'var(--text)'
-        }
-      }}
-      onMouseLeave={e => {
-        if (!active) {
-          e.currentTarget.style.background = 'transparent'
-          e.currentTarget.style.color = 'var(--text-dim)'
-        }
+        border: '1px solid',
+        borderColor: active ? 'var(--border-focus)' : 'transparent',
+        background: active ? 'var(--surface-hover)' : 'transparent',
+        color: active ? 'var(--text)' : 'var(--text-dim)',
       }}
     >
-      <span style={{ fontSize: 18 }}>{icon}</span>
-      {label}
+      <Icon size={16} color={active ? 'var(--accent)' : 'var(--text-muted)'} />
+      <span>{label}</span>
     </button>
   )
 }
 
-export default function Sidebar({ activeTab, setActiveTab }) {
+export default function Sidebar({ activeTab, onNavigate }) {
   return (
-    <nav style={{
-      flex: '0 0 240px',
-      padding: '24px 16px',
-      borderRight: '1px solid var(--border)',
-      background: 'var(--sidebar-bg)',
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
-      display: 'flex', flexDirection: 'column', gap: 8,
-    }}>
-      <SidebarButton active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} icon="🎮" label="Game Arcade" />
-      <SidebarButton active={activeTab === 'learn'} onClick={() => setActiveTab('learn')} icon="📖" label="Gesture Guide" />
-      <SidebarButton active={activeTab === 'leaderboard'} onClick={() => setActiveTab('leaderboard')} icon="🏆" label="Leaderboards" />
-      <SidebarButton active={activeTab === 'about'} onClick={() => setActiveTab('about')} icon="ℹ️" label="How it Works" />
+    <nav 
+      aria-label="Main Navigation"
+      style={{
+        flex: '0 0 220px',
+        padding: '20px 12px',
+        borderRight: '1px solid var(--border)',
+        background: 'var(--sidebar-bg)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+      }}
+    >
+      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', padding: '0 12px 6px', letterSpacing: '0.05em' }}>
+        Studio
+      </div>
+      <SidebarButton active={activeTab === 'dashboard'} onClick={() => onNavigate('/')} icon={StudioIcon} label="Shadow Studio" />
+      <SidebarButton active={activeTab === 'learn'} onClick={() => onNavigate('/guide')} icon={GuideIcon} label="Gesture Reference" />
+      <SidebarButton active={activeTab === 'leaderboard'} onClick={() => onNavigate('/leaderboard')} icon={TrophyIcon} label="Leaderboards" />
+      <SidebarButton active={activeTab === 'about'} onClick={() => onNavigate('/about')} icon={InfoIcon} label="How It Works" />
+
+      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', padding: '16px 12px 6px', letterSpacing: '0.05em' }}>
+        Compliance & Legal
+      </div>
+      <SidebarButton active={activeTab === 'privacy'} onClick={() => onNavigate('/privacy')} icon={ShieldIcon} label="Privacy Policy" />
+      <SidebarButton active={activeTab === 'terms'} onClick={() => onNavigate('/terms')} icon={FileTextIcon} label="Terms of Service" />
+      <SidebarButton active={activeTab === 'cookies'} onClick={() => onNavigate('/cookies')} icon={FileTextIcon} label="Cookie Policy" />
     </nav>
   )
 }

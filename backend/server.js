@@ -2,8 +2,6 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
-mongoose.set('bufferCommands', false)
-
 const challengeRoutes = require('./routes/challenge')
 const leaderboardRoutes = require('./routes/leaderboard')
 
@@ -12,8 +10,24 @@ const PORT = process.env.PORT || 5000
 const MONGODB_URI = process.env.MONGODB_URI
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
 
+const allowedOrigins = [
+  FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+].filter(Boolean)
+
 // ── Middleware ──
-app.use(cors({ origin: FRONTEND_URL }))
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      return callback(null, true)
+    }
+    return callback(null, origin)
+  },
+  credentials: true,
+}))
 app.use(express.json())
 
 // ── Routes ──
@@ -52,7 +66,7 @@ async function start() {
   }
 
   app.listen(PORT, () => {
-    console.log(`🎭 ShadowPlay AI backend running on http://localhost:${PORT}`)
+    console.log(`🎭 ShadowPlay backend running on http://localhost:${PORT}`)
   })
 }
 

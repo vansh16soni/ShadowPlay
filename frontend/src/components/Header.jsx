@@ -1,110 +1,91 @@
 import React from 'react'
+import { StudioIcon, SunIcon, MoonIcon, VolumeIcon, VolumeMuteIcon } from './Icons'
 
-export default function Header({ guestId, theme, setTheme, voiceEnabled, setVoiceEnabled, speak }) {
+export default function Header({ guestId, theme, setTheme, voiceEnabled, setVoiceEnabled, speak, onNavigate }) {
   return (
     <header style={{
-      padding: '16px 24px',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '12px 24px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
       borderBottom: '1px solid var(--border)',
       background: 'var(--nav-bg)',
-      backdropFilter: 'blur(16px)',
-      position: 'sticky', top: 0, zIndex: 50,
+      position: 'sticky',
+      top: 0,
+      zIndex: 50,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button
+          onClick={() => onNavigate('/')}
+          className="link-button"
+          style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}
+          aria-label="ShadowPlay Studio Home"
+        >
           <div style={{
-            width: 40, height: 40,
-            borderRadius: 12,
-            background: 'linear-gradient(135deg, var(--accent-red), var(--accent-orange), var(--accent-gold))',
-            boxShadow: '0 4px 15px rgba(249, 115, 22, 0.3)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22,
-            color: '#fff',
-            fontWeight: 'bold',
+            width: 32,
+            height: 32,
+            borderRadius: 4,
+            background: 'var(--accent)',
+            color: '#ffffff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}>
-            🎭
+            <StudioIcon size={18} color="#ffffff" />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{
-              fontSize: 22,
-              fontWeight: 800,
-              letterSpacing: '0.04em',
-              fontFamily: 'var(--font-title)',
-              background: 'linear-gradient(90deg, var(--accent-red), var(--accent-orange), var(--accent-gold))',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              lineHeight: 1.1,
-            }}>
-              SHADOWPLAY
+          <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+            <span style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+              ShadowPlay
             </span>
-            <span style={{
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: '0.28em',
-              color: 'var(--accent-gold)',
-              marginTop: 2,
-              textTransform: 'uppercase',
-              opacity: 0.95
-            }}>
-              AI.STUDIO
+            <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+              Hand Silhouette Studio
             </span>
           </div>
-        </div>
+        </button>
+
         <span style={{
-          fontSize: 10,
-          letterSpacing: '0.1em',
+          fontSize: 11,
+          fontWeight: 600,
           padding: '2px 8px',
-          borderRadius: 6,
-          background: 'rgba(249, 115, 22, 0.12)',
-          border: '1px solid rgba(249, 115, 22, 0.25)',
-          color: 'var(--accent-orange)',
-          textTransform: 'uppercase',
-          fontWeight: 700,
+          borderRadius: 4,
+          background: 'var(--surface-hover)',
+          border: '1px solid var(--border)',
+          color: 'var(--text-muted)',
         }}>
-          Beta
+          v1.0 (On-Device)
         </span>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        {/* Guest ID badge */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {/* Guest Identifier badge */}
         <div style={{
           fontSize: 12,
-          fontFamily: 'var(--font-title)',
           color: 'var(--text-dim)',
-          background: 'var(--nav-btn-bg)',
+          background: 'var(--surface)',
           border: '1px solid var(--border)',
-          padding: '6px 12px',
-          borderRadius: 8,
+          padding: '6px 10px',
+          borderRadius: 4,
+          fontFamily: 'var(--font-mono)',
         }}>
-          🎮 PLAYER: <span style={{ color: 'var(--accent-orange)', fontWeight: 700 }}>#{guestId.slice(-4).toUpperCase()}</span>
+          Player: <strong style={{ color: 'var(--text)' }}>#{guestId.slice(-4).toUpperCase()}</strong>
         </div>
 
         {/* Theme Switcher Toggle */}
         <button 
           onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
           style={{
-            padding: 8,
-            borderRadius: 8,
-            background: 'var(--nav-btn-bg)',
-            border: '1px solid var(--border)',
-            color: 'var(--text-muted)',
-            fontSize: 16,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'all 0.2s ease',
+            padding: '6px 10px',
+            borderRadius: 4,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 12,
           }}
-          title={theme === 'dark' ? "Switch to Bright Mode" : "Switch to Dark Mode"}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = 'var(--accent-orange)'
-            e.currentTarget.style.color = 'var(--accent-orange)'
-            e.currentTarget.style.background = 'var(--nav-btn-hover)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = 'var(--border)'
-            e.currentTarget.style.color = 'var(--text-muted)'
-            e.currentTarget.style.background = 'var(--nav-btn-bg)'
-          }}
+          title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          aria-label={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >
-          {theme === 'dark' ? '☀️' : '🌙'}
+          {theme === 'dark' ? <SunIcon size={14} /> : <MoonIcon size={14} />}
+          <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
         </button>
 
         {/* Voice Speech Toggle */}
@@ -112,35 +93,22 @@ export default function Header({ guestId, theme, setTheme, voiceEnabled, setVoic
           onClick={() => {
             const nextVal = !voiceEnabled
             setVoiceEnabled(nextVal)
-            if (nextVal) speak("Voice narration activated")
+            if (nextVal) speak("Voice guidance enabled")
           }} 
           style={{
-            padding: 8,
-            borderRadius: 8,
-            background: voiceEnabled ? 'rgba(249, 115, 22, 0.12)' : 'var(--nav-btn-bg)',
-            border: voiceEnabled ? '1px solid rgba(249, 115, 22, 0.3)' : '1px solid var(--border)',
-            color: voiceEnabled ? 'var(--accent-orange)' : 'var(--text-muted)',
-            fontSize: 16,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'all 0.2s ease',
+            padding: '6px 10px',
+            borderRadius: 4,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 12,
+            borderColor: voiceEnabled ? 'var(--border-focus)' : 'var(--border)',
           }}
-          title={voiceEnabled ? "Mute Voice Narration" : "Unmute Voice Narration"}
-          onMouseEnter={e => {
-            if (!voiceEnabled) {
-              e.currentTarget.style.borderColor = 'var(--accent-orange)'
-              e.currentTarget.style.color = 'var(--accent-orange)'
-              e.currentTarget.style.background = 'var(--nav-btn-hover)'
-            }
-          }}
-          onMouseLeave={e => {
-            if (!voiceEnabled) {
-              e.currentTarget.style.borderColor = 'var(--border)'
-              e.currentTarget.style.color = 'var(--text-muted)'
-              e.currentTarget.style.background = 'var(--nav-btn-bg)'
-            }
-          }}
+          title={voiceEnabled ? "Mute Voice Guidance" : "Enable Voice Guidance"}
+          aria-label={voiceEnabled ? "Mute Voice Guidance" : "Enable Voice Guidance"}
         >
-          {voiceEnabled ? '🔊' : '🔇'}
+          {voiceEnabled ? <VolumeIcon size={14} color="var(--accent)" /> : <VolumeMuteIcon size={14} />}
+          <span>{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
         </button>
       </div>
     </header>

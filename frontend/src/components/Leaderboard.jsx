@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { getLeaderboard } from '../utils/api'
+import { TrophyIcon, RefreshIcon } from './Icons'
 
 export default function Leaderboard({ guestId }) {
   const [scores, setScores] = useState([])
@@ -15,88 +16,84 @@ export default function Leaderboard({ guestId }) {
 
   useEffect(() => {
     fetchScores()
-  }, []) // eslint-disable-line
-
-  const medals = ['🥇', '🥈', '🥉']
+  }, [])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ fontSize: 24, color: 'var(--accent-cyan)', fontFamily: 'var(--font-title)' }}>🏆 Global Leaders</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <TrophyIcon size={20} color="var(--accent-gold)" />
+          <h2 style={{ fontSize: 20, color: 'var(--text)' }}>Leaderboard Records</h2>
+        </div>
         <button 
           onClick={fetchScores} 
           disabled={loading}
           style={{
-            background: 'rgba(255,255,255,0.03)', 
-            color: 'var(--text-dim)',
-            padding: '6px 12px', 
-            borderRadius: 8, 
-            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '6px 12px',
             fontSize: 12,
-            border: '1px solid var(--border)',
           }}
+          aria-label="Refresh leaderboard scores"
         >
-          {loading ? '...' : '↻ Refresh'}
+          <RefreshIcon size={14} />
+          <span>{loading ? 'Fetching...' : 'Refresh'}</span>
         </button>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-dim)' }}>
-          <div style={{ 
-            fontSize: 24, 
-            animation: 'spin 1s linear infinite', 
-            display: 'inline-block',
-            color: 'var(--accent-purple)'
-          }}>⟳</div>
-          <p style={{ marginTop: 12, fontSize: 13 }}>Retrieving high scores...</p>
+        <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--text-muted)', fontSize: 14 }}>
+          Retrieving leaderboard records...
         </div>
       ) : scores.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 40 }}>
-          <div style={{ fontSize: 36, opacity: 0.3 }}>🎮</div>
-          <p style={{ color: 'var(--text-dim)', marginTop: 12, fontSize: 13 }}>
-            No scores registered yet.<br />Play Speedrun or Quest Mode to claim #1!
+        <div style={{ textAlign: 'center', padding: '32px 16px', border: '1px dashed var(--border)', borderRadius: 4 }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+            No scores registered yet. Complete a Time Attack or Shadow Quest challenge to rank.
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {scores.map((entry, i) => {
             const isMe = entry.guestId === guestId
             return (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                padding: '12px 16px', 
-                borderRadius: 12,
-                background: isMe ? 'rgba(6, 182, 212, 0.08)' : 'rgba(255, 255, 255, 0.01)',
-                border: `1px solid ${isMe ? 'rgba(6, 182, 212, 0.25)' : 'var(--border)'}`,
-                boxShadow: isMe ? '0 0 15px rgba(6, 182, 212, 0.1)' : 'none',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={e => {
-                if (!isMe) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
-              }}
-              onMouseLeave={e => {
-                if (!isMe) e.currentTarget.style.borderColor = 'var(--border)'
-              }}
+              <div 
+                key={entry.guestId || i} 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '10px 14px',
+                  borderRadius: 4,
+                  background: isMe ? 'var(--surface-hover)' : 'var(--surface)',
+                  border: '1px solid',
+                  borderColor: isMe ? 'var(--border-focus)' : 'var(--border)',
+                }}
               >
-                <span style={{ fontSize: 20, width: 28, textAlign: 'center' }}>
-                  {medals[i] || `#${i + 1}`}
+                <span style={{ 
+                  fontSize: 13, 
+                  fontWeight: 700, 
+                  width: 28, 
+                  color: i < 3 ? 'var(--accent-gold)' : 'var(--text-muted)' 
+                }}>
+                  #{i + 1}
                 </span>
                 <span style={{
                   flex: 1, 
-                  fontSize: 14,
-                  color: isMe ? 'var(--accent-cyan)' : 'var(--text)',
+                  fontSize: 13,
+                  color: isMe ? 'var(--text)' : 'var(--text-dim)',
                   fontWeight: isMe ? 700 : 500,
+                  fontFamily: 'var(--font-mono)'
                 }}>
-                  {isMe ? 'You (Current Player)' : `Player ${entry.guestId?.slice(-4).toUpperCase() || 'ANON'}`}
+                  {isMe ? 'You (Current Session)' : `Player #${entry.guestId?.slice(-4).toUpperCase() || 'ANON'}`}
                 </span>
                 <span style={{
-                  fontFamily: 'var(--font-title)', 
-                  fontSize: 20,
+                  fontFamily: 'var(--font-mono)', 
+                  fontSize: 16,
                   fontWeight: 700,
-                  color: i === 0 ? 'var(--accent-cyan)' : i === 1 ? 'var(--accent-purple)' : i === 2 ? 'var(--accent-pink)' : 'var(--text-dim)',
-                  textShadow: i < 3 ? '0 0 10px rgba(255,255,255,0.05)' : 'none'
+                  color: 'var(--text)',
                 }}>
-                  {entry.totalScore ?? entry.score ?? 0}
+                  {entry.totalScore ?? entry.score ?? 0} pts
                 </span>
               </div>
             )

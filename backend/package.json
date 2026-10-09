@@ -1,5 +1,5 @@
 {
-  "name": "shadowplay-ai-backend",
+  "name": "shadowplay-backend",
   "version": "1.0.0",
   "type": "commonjs",
   "scripts": {

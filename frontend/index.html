@@ -3,9 +3,63 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="ShadowPlay AI – Make hand shadow puppets recognized by AI" />
-    <title>🎭 ShadowPlay AI</title>
-    <link rel="icon" type="image/svg+xml" data-href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>" />
+    <title>ShadowPlay | Browser Hand Shadow Puppet Studio</title>
+    <meta name="description" content="Interactive browser-based hand shadow puppetry tool using private on-device computer vision. Practice 21 hand gesture silhouettes without cloud video uploads." />
+    <meta name="author" content="ShadowPlay Technologies" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://shadowplay.app/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Open Graph Social Metadata -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://shadowplay.app/" />
+    <meta property="og:title" content="ShadowPlay | Browser Hand Shadow Puppet Studio" />
+    <meta property="og:description" content="Interactive browser-based hand shadow puppetry using private on-device computer vision." />
+    <meta property="og:image" content="https://shadowplay.app/og-image.svg" />
+    <meta property="og:site_name" content="ShadowPlay" />
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://shadowplay.app/" />
+    <meta name="twitter:title" content="ShadowPlay | Browser Hand Shadow Puppet Studio" />
+    <meta name="twitter:description" content="Interactive browser-based hand shadow puppetry using private on-device computer vision." />
+    <meta name="twitter:image" content="https://shadowplay.app/og-image.svg" />
+
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://shadowplay.app/#webapp",
+          "name": "ShadowPlay",
+          "url": "https://shadowplay.app",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "All modern web browsers with WebRTC and WebAssembly support",
+          "browserRequirements": "Requires Chrome 90+, Firefox 90+, Safari 15+, or Edge 90+",
+          "description": "Browser hand shadow puppet recognition tool running on-device MediaPipe inference.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://shadowplay.app/#organization",
+          "name": "ShadowPlay Technologies",
+          "url": "https://shadowplay.app",
+          "logo": "https://shadowplay.app/favicon.svg",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "support@shadowplay.app",
+            "contactType": "Customer Support"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,29 +1,33 @@
-# 🎭 ShadowPlay AI
+# ShadowPlay
 
-A browser-based hand shadow puppet game. Make hand gestures in front of your webcam and AI recognizes them, casting an animated shadow on a virtual wall. Includes free-play mode, a timed challenge mode with scoring, a gesture gallery, and a global leaderboard.
+A browser-based hand shadow puppet studio. Position your hands in front of your webcam to cast real-time silhouettes recognized by client-side computer vision. Includes free practice mode, adversarial shadow quest challenges, speedrun time attack, reference library, and global leaderboards.
 
-**Privacy first:** all hand tracking (MediaPipe Hands) runs entirely in your browser. No video frames are ever sent to a server.
+**Privacy-first architecture:** Hand tracking runs entirely in the browser using MediaPipe Hands via WebAssembly/WebGL. Zero camera frames, video feeds, or biometric templates are stored or transmitted to external servers.
 
 ---
 
-## 🧩 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 18 + Vite, react-webcam, Canvas API |
-| AI Inference | MediaPipe Hands (`@mediapipe/hands` + `@mediapipe/camera_utils`) |
-| Backend | Node.js + Express |
-| Database | MongoDB + Mongoose |
+| Frontend | React 18, Vite, Canvas API, Web Audio API, Web Speech API |
+| Computer Vision | MediaPipe Hands (21 3D landmarks) |
+| Backend | Node.js, Express |
+| Database | MongoDB, Mongoose |
+| Legal / Compliance | Digital Personal Data Protection Act 2023 (DPDP, India), GDPR, CCPA |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-shadowplay-ai/
+shadowplay/
 ├── frontend/
+│   ├── public/             # sitemap.xml, robots.txt, llms.txt, favicon.svg, og-image.svg
 │   ├── src/
-│   │   ├── components/    # WebcamFeed, ShadowCanvas, ChallengeMode, Gallery, Leaderboard
+│   │   ├── components/     # ShadowCanvas, WebcamFeed, BattlePanel, SpeedrunPanel, Gallery,
+│   │   │                   # Header, Sidebar, Icons, PrivacyPolicy, TermsAndConditions,
+│   │   │                   # CookiePolicy, CookieBanner, NotFound
 │   │   ├── hooks/          # useMediaPipe
 │   │   ├── utils/          # gestureClassifier, shadowDrawers, sounds, api
 │   │   ├── App.jsx
@@ -40,12 +44,12 @@ shadowplay-ai/
 
 ---
 
-## 🚀 Setup & Run
+## Setup & Local Development
 
 ### 1. Prerequisites
 - Node.js 18+
-- A MongoDB database (use [MongoDB Atlas](https://www.mongodb.com/atlas) free tier, or run MongoDB locally / via Docker)
-- A webcam
+- MongoDB instance (Atlas or local)
+- Web browser with webcam access
 
 ### 2. Backend Setup
 
@@ -55,24 +59,19 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env`:
-```
-MONGODB_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/shadowplay?retryWrites=true&w=majority
+Configure `.env`:
+```env
 PORT=5000
 FRONTEND_URL=http://localhost:5173
+MONGODB_URI=mongodb://localhost:27017/shadowplay
 ```
-
-> To run MongoDB locally with Docker instead:
-> ```bash
-> docker run -d -p 27017:27017 --name shadowplay-mongo mongo:7
-> ```
-> Then set `MONGODB_URI=mongodb://localhost:27017/shadowplay`
 
 Start the backend:
 ```bash
-npm run dev   # or: npm start
+npm run dev
 ```
-Server runs at `http://localhost:5000`. Verify with: `http://localhost:5000/api/health`
+
+Verify backend health at: `http://localhost:5000/api/health`
 
 ### 3. Frontend Setup
 
@@ -82,8 +81,8 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env`:
-```
+Configure `.env`:
+```env
 VITE_API_URL=http://localhost:5000
 ```
 
@@ -91,65 +90,27 @@ Start the frontend:
 ```bash
 npm run dev
 ```
-App runs at `http://localhost:5173`.
 
-### 4. Play!
-1. Open `http://localhost:5173` in Chrome/Firefox/Safari.
-2. Allow camera permission when prompted.
-3. Wait for the "Loading AI..." progress bar to finish (loads MediaPipe Hands model from CDN).
-4. Make a hand gesture — Rabbit 🐇, Dog 🐕, Bird 🕊️, Butterfly 🦋, or Snake 🐍 — and watch the shadow appear.
-5. Click **🏆 Start Challenge** for timed scoring rounds.
-6. Click **📖 Learn** for the gesture gallery, **🏆 Scores** for the leaderboard.
+Application runs at `http://localhost:5173`.
 
 ---
 
-## 🖐 Gesture Guide
-
-| Gesture | How to make it |
-|---|---|
-| 🐇 Rabbit | Index + middle fingers up & spread apart (ears), rest folded |
-| 🐕 Dog | Thumb + pinky extended, other three fingers folded |
-| 🕊️ Bird | All five fingers spread wide open |
-| 🦋 Butterfly | Four fingers extended together, thumb tucked in |
-| 🐍 Snake | Index + middle fingers extended and pressed together, rest folded |
-
----
-
-## 🔌 API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/challenge/start` | Create a new challenge session, returns `sessionId` |
-| POST | `/api/challenge/attempt` | Submit `{ sessionId, gesturePrompt, userGesture, isCorrect }` |
-| POST | `/api/challenge/save-score` | Save final score `{ guestId, score }` |
-| GET | `/api/leaderboard?limit=10` | Top guests by total score |
-| GET | `/api/user/:guestId/stats` | A user's score history |
-| GET | `/api/health` | Backend + DB health check |
+| POST | `/api/challenge/start` | Creates challenge session, returns `sessionId` |
+| POST | `/api/challenge/attempt` | Submits gesture verification attempt |
+| POST | `/api/challenge/save-score` | Records finalized score by `guestId` |
+| GET | `/api/leaderboard?limit=10` | Retrieves top scores |
+| GET | `/api/user/:guestId/stats` | Fetches historical player stats |
+| GET | `/api/health` | Service and MongoDB connectivity check |
 
-If the backend is unreachable, the frontend automatically falls back to `localStorage` for scores and leaderboard so the game remains playable offline.
-
----
-
-## 🌐 Browser APIs Used
-
-- **MediaPipe Hands** — on-device hand landmark tracking (21 points)
-- **WebRTC** (via `react-webcam`) — camera access
-- **Canvas API** — shadow rendering
-- **Web Audio API** — procedural sound effects (no audio files needed)
-- **Web Speech API** — optional voice announcements of recognized gestures
+If the backend database is unreachable, scores and game state automatically fall back to local browser storage with automatic sync once the connection is restored.
 
 ---
 
-## 🛠 Deployment Notes
+## License & Compliance
 
-- **Frontend** → Vercel: set `VITE_API_URL` to your deployed backend URL in project env vars.
-- **Backend** → Render / Railway: set `MONGODB_URI` and `FRONTEND_URL` (your deployed frontend URL) as env vars.
-
----
-
-## ⚠️ Troubleshooting
-
-- **"Loading AI..." stuck** — MediaPipe loads from a CDN; check your internet connection.
-- **Camera permission denied** — re-enable camera access in browser site settings and refresh.
-- **Gestures not recognized** — ensure good lighting, plain background, hand 30–60cm from camera. See the in-app Gallery for finger-position diagrams.
-- **Leaderboard empty** — play Challenge Mode at least once; if MongoDB isn't connected, scores save to `localStorage` only (per-browser).
+Copyright (c) 2026 ShadowPlay Studio. All rights reserved.
+Operated in compliance with the Digital Personal Data Protection Act, 2023 (India).

@@ -45,10 +45,11 @@ async function submitAttempt(req, res) {
       timeTakenMs: timeTakenMs || null,
     })
 
-    if (isCorrect) {
+    const pointsToAdd = typeof req.body.points === 'number' ? req.body.points : (isCorrect ? 10 : 0)
+    if (pointsToAdd > 0) {
       await Session.updateOne(
         { sessionId },
-        { $inc: { finalScore: 10 } }
+        { $inc: { finalScore: pointsToAdd } }
       )
     }
 

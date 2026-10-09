@@ -22,42 +22,60 @@ const LANDMARKS = {
 }
 
 /**
- * Returns true if finger tip is above (lower y value) its PIP joint.
- * MediaPipe: y=0 is top of image, y=1 is bottom.
- * Extended = tip y < pip y
+ * Distance between two landmarks (normalized 0-1 space)
  */
-function isExtended(lm, tipIdx, pipIdx) {
-  return lm[tipIdx].y < lm[pipIdx].y
+function dist(a, b) {
+  return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
 }
 
 /**
- * Thumb special case: compare tip x vs MCP x (handedness aware).
- * We use distance from wrist as a proxy instead.
+ * Returns true if finger is extended (straightened).
+ * Rotation-invariant: uses Euclidean distance from wrist and MCP joint.
+ * Works regardless of whether hand is pointing up, sideways, or down.
+ */
+function isExtended(lm, tipIdx, pipIdx, mcpIdx) {
+  const wrist = lm[LANDMARKS.WRIST]
+  const mcp = lm[mcpIdx]
+  const pip = lm[pipIdx]
+  const tip = lm[tipIdx]
+
+  const dTipWrist = dist(tip, wrist)
+  const dPipWrist = dist(pip, wrist)
+  const dTipMcp = dist(tip, mcp)
+  const dPipMcp = dist(pip, mcp)
+
+  // When extended, tip is further from both wrist and MCP than the intermediate PIP joint
+  return dTipWrist > dPipWrist && dTipMcp > dPipMcp
+}
+
+/**
+ * Rotation and handedness invariant thumb extension detection.
+ * Checks distance of thumb tip from palm center, pinky knuckle, and wrist.
  */
 function isThumbExtended(lm) {
-  const tipX = lm[LANDMARKS.THUMB_TIP].x
-  const mcpX = lm[LANDMARKS.THUMB_MCP].x
-  const wristX = lm[LANDMARKS.WRIST].x
-  // If wrist is to the right of MCP, left hand; flip logic
-  const isRightHand = wristX < mcpX
-  return isRightHand ? tipX > mcpX : tipX < mcpX
+  const thumbTip = lm[LANDMARKS.THUMB_TIP]
+  const thumbIp = lm[LANDMARKS.THUMB_IP]
+  const wrist = lm[LANDMARKS.WRIST]
+  const indexMcp = lm[LANDMARKS.INDEX_MCP]
+  const pinkyMcp = lm[LANDMARKS.PINKY_MCP]
+
+  const dTipPinky = dist(thumbTip, pinkyMcp)
+  const dIpPinky = dist(thumbIp, pinkyMcp)
+  const dTipIndex = dist(thumbTip, indexMcp)
+  const dTipWrist = dist(thumbTip, wrist)
+  const dIpWrist = dist(thumbIp, wrist)
+
+  return (dTipPinky > dIpPinky && dTipIndex > 0.065) || (dTipWrist > dIpWrist * 1.15 && dTipIndex > 0.065)
 }
 
 function getFingerStates(lm) {
   return {
     thumb:  isThumbExtended(lm),
-    index:  isExtended(lm, LANDMARKS.INDEX_TIP,  LANDMARKS.INDEX_PIP),
-    middle: isExtended(lm, LANDMARKS.MIDDLE_TIP, LANDMARKS.MIDDLE_PIP),
-    ring:   isExtended(lm, LANDMARKS.RING_TIP,   LANDMARKS.RING_PIP),
-    pinky:  isExtended(lm, LANDMARKS.PINKY_TIP,  LANDMARKS.PINKY_PIP),
+    index:  isExtended(lm, LANDMARKS.INDEX_TIP,  LANDMARKS.INDEX_PIP,  LANDMARKS.INDEX_MCP),
+    middle: isExtended(lm, LANDMARKS.MIDDLE_TIP, LANDMARKS.MIDDLE_PIP, LANDMARKS.MIDDLE_MCP),
+    ring:   isExtended(lm, LANDMARKS.RING_TIP,   LANDMARKS.RING_PIP,   LANDMARKS.RING_MCP),
+    pinky:  isExtended(lm, LANDMARKS.PINKY_TIP,  LANDMARKS.PINKY_PIP,  LANDMARKS.PINKY_MCP),
   }
-}
-
-/**
- * Distance between two landmarks (normalized 0-1 space)
- */
-function dist(a, b) {
-  return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
 }
 
 /**
@@ -72,9 +90,9 @@ function classifySingleHand(landmarks) {
   // ── RABBIT 🐇 ──
   // Index + middle extended (ears), ring + pinky + thumb folded
   if (f.index && f.middle && !f.ring && !f.pinky && !f.thumb) {
-    // Extra: index and middle spread apart (not touching)
-    const spread = Math.abs(lm[LANDMARKS.INDEX_TIP].x - lm[LANDMARKS.MIDDLE_TIP].x)
-    if (spread > 0.03) return 'rabbit'
+    // 2D Euclidean distance between index & middle tips (spread apart)
+    const tipSpread = dist(lm[LANDMARKS.INDEX_TIP], lm[LANDMARKS.MIDDLE_TIP])
+    if (tipSpread > 0.042) return 'rabbit'
   }
 
   // ── DOG 🐕 ──
@@ -98,8 +116,8 @@ function classifySingleHand(landmarks) {
   // ── SNAKE 🐍 ──
   // Index + middle extended close together (touching), ring + pinky + thumb folded
   if (f.index && f.middle && !f.ring && !f.pinky && !f.thumb) {
-    const spread = Math.abs(lm[LANDMARKS.INDEX_TIP].x - lm[LANDMARKS.MIDDLE_TIP].x)
-    if (spread <= 0.03) return 'snake'
+    const tipSpread = dist(lm[LANDMARKS.INDEX_TIP], lm[LANDMARKS.MIDDLE_TIP])
+    if (tipSpread <= 0.042) return 'snake'
   }
 
   // ── GOAT 🐐 ──

@@ -9,9 +9,14 @@ import BattlePanel from './components/BattlePanel'
 import SpeedrunPanel from './components/SpeedrunPanel'
 import PlaySetupModal from './components/PlaySetupModal'
 import SplashScreen from './components/SplashScreen'
-import Starfield from './components/Starfield'
+import PrivacyPolicy from './components/PrivacyPolicy'
+import TermsAndConditions from './components/TermsAndConditions'
+import CookiePolicy from './components/CookiePolicy'
+import CookieBanner from './components/CookieBanner'
+import NotFound from './components/NotFound'
+import { PracticeIcon, QuestIcon, TimerIcon, ExitIcon } from './components/Icons'
 import { GESTURE_INFO, GESTURE_NAMES, GESTURE_ANIMALS, GESTURE_THINGS } from './utils/gestureClassifier'
-import { playGestureChange, playSuccess, playError, playChallengStart } from './utils/sounds'
+import { playGestureChange, playSuccess, playError, playChallengStart, resumeAudio } from './utils/sounds'
 import { startChallenge, saveScore, submitAttempt, syncOfflineScores } from './utils/api'
 
 // Stable guest ID persisted across sessions
@@ -29,38 +34,118 @@ const GUEST_ID = getGuestId()
 const BOSS_LIST = [
   {
     name: 'Vortex Bat',
-    emoji: '🦇',
     maxHp: 80,
     timeLimit: 8,
-    vulnerabilities: ['bird', 'butterfly', 'goat'],
-    vulnerabilitiesThings: ['scissors', 'glasses', 'cup'],
+    vulnerabilities: ['bird', 'butterfly', 'goat', 'eagle'],
+    vulnerabilitiesThings: ['scissors', 'glasses', 'cup', 'heart'],
     damageMultiplier: 20,
     color: '#ef4444' // Red
   },
   {
     name: 'Gloom Wolf',
-    emoji: '🐺',
     maxHp: 120,
     timeLimit: 6,
-    vulnerabilities: ['dog', 'rabbit', 'fox', 'horse', 'donkey'],
-    vulnerabilitiesThings: ['crown', 'airplane', 'scissors'],
+    vulnerabilities: ['dog', 'rabbit', 'fox', 'horse', 'donkey', 'deer'],
+    vulnerabilitiesThings: ['crown', 'airplane', 'scissors', 'sword'],
     damageMultiplier: 25,
     color: '#f97316' // Orange
   },
   {
     name: 'Abyss Dragon',
-    emoji: '🐉',
     maxHp: 160,
     timeLimit: 5,
-    vulnerabilities: ['snake', 'bird', 'goat', 'fox', 'spider', 'pig', 'lizard'],
-    vulnerabilitiesThings: ['cup', 'crown', 'glasses', 'airplane'],
+    vulnerabilities: ['snake', 'bird', 'goat', 'fox', 'spider', 'pig', 'lizard', 'eagle', 'deer'],
+    vulnerabilitiesThings: ['cup', 'crown', 'glasses', 'airplane', 'heart'],
     damageMultiplier: 30,
     color: '#fbbf24' // Gold
   }
 ]
 
+function Breadcrumbs({ path, onNavigate }) {
+  if (path === '/') return null
+  const labels = {
+    '/guide': 'Gesture Reference',
+    '/battle': 'Shadow Quest',
+    '/speedrun': 'Time Attack',
+    '/leaderboard': 'Leaderboard',
+    '/about': 'How It Works',
+    '/privacy': 'Privacy Policy',
+    '/terms': 'Terms of Service',
+    '/cookies': 'Cookie Policy',
+  }
+  const currentLabel = labels[path] || '404 Not Found'
+  return (
+    <nav aria-label="Breadcrumb" style={{ marginBottom: 16 }}>
+      <ol style={{ display: 'flex', alignItems: 'center', gap: 8, listStyle: 'none', padding: 0, margin: 0, fontSize: 13, color: 'var(--text-muted)' }}>
+        <li>
+          <button 
+            type="button"
+            onClick={() => onNavigate('/')}
+            style={{ background: 'none', border: 'none', padding: 0, color: 'var(--text-dim)', cursor: 'pointer', font: 'inherit', textDecoration: 'underline' }}
+          >
+            Studio
+          </button>
+        </li>
+        <li aria-hidden="true" style={{ color: 'var(--border)' }}>/</li>
+        <li aria-current="page" style={{ color: 'var(--text)', fontWeight: 600 }}>{currentLabel}</li>
+      </ol>
+    </nav>
+  )
+}
+
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard') // dashboard | learn | leaderboard | about
+  // Path-based routing with slug tracking
+  const [currentPath, setCurrentPath] = useState(() => {
+    return window.location.pathname || '/'
+  })
+
+  const navigate = useCallback((path) => {
+    if (window.location.pathname !== path) {
+      window.history.pushState({}, '', path)
+    }
+    setCurrentPath(path)
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [])
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname || '/')
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  // Sync document title and canonical tag based on slug
+  useEffect(() => {
+    const titles = {
+      '/': 'ShadowPlay | Browser Hand Shadow Puppet Studio',
+      '/guide': 'Gesture Reference Library | ShadowPlay',
+      '/battle': 'Shadow Quest Challenge | ShadowPlay',
+      '/speedrun': 'Time Attack Challenge | ShadowPlay',
+      '/leaderboard': 'Global Gesture Leaderboard | ShadowPlay',
+      '/about': 'How Computer Vision Operates | ShadowPlay',
+      '/privacy': 'Privacy Policy (India DPDP Act Compliant) | ShadowPlay',
+      '/terms': 'Terms and Conditions | ShadowPlay',
+      '/cookies': 'Cookie and Storage Policy | ShadowPlay',
+    }
+    document.title = titles[currentPath] || 'Page Not Found (404) | ShadowPlay'
+    
+    const canonical = document.querySelector("link[rel='canonical']")
+    if (canonical) {
+      canonical.setAttribute('href', `https://shadowplay.app${currentPath === '/' ? '' : currentPath}`)
+    }
+  }, [currentPath])
+
+  // Map slug to active tab for sidebar highlight
+  const getActiveTab = () => {
+    if (currentPath === '/guide') return 'learn'
+    if (currentPath === '/leaderboard') return 'leaderboard'
+    if (currentPath === '/about') return 'about'
+    if (currentPath === '/privacy') return 'privacy'
+    if (currentPath === '/terms') return 'terms'
+    if (currentPath === '/cookies') return 'cookies'
+    return 'dashboard'
+  }
   
   // Theme State
   const [theme, setTheme] = useState(() => {
@@ -73,7 +158,7 @@ export default function App() {
   }, [theme])
 
   // Category State
-  const [category, setCategory] = useState('animals') // animals | things
+  const [category, setCategory] = useState('animals') // animals | things | all
   const [isSetupOpen, setIsSetupOpen] = useState(false)
   const [gameStarted, setGameStarted] = useState(false)
 
@@ -115,7 +200,9 @@ export default function App() {
   const [speedStreak, setSpeedStreak] = useState(0)
   const [speedFeedback, setSpeedFeedback] = useState('')
   const speedTimerRef = useRef(null)
+  const speedTargetTimeoutRef = useRef(null)
   const targetCompletedRef = useRef(false)
+  const lastSpokenRef = useRef({ text: '', time: 0 })
 
   const latestGestureRef = useRef(gesture)
   const latestVulRef = useRef(battleVulnerability)
@@ -153,15 +240,36 @@ export default function App() {
     }
   }, [])
 
-  // Web Speech API Voice Guidance
+  // Web Speech API Voice Guidance with debounce and anti-crash guard
   function speak(text) {
-    if (voiceEnabled && 'speechSynthesis' in window) {
+    if (!voiceEnabled || !text || !('speechSynthesis' in window)) return
+    const now = Date.now()
+    if (lastSpokenRef.current.text === text && now - lastSpokenRef.current.time < 1200) {
+      return
+    }
+    lastSpokenRef.current = { text, time: now }
+    try {
       window.speechSynthesis.cancel()
       const u = new SpeechSynthesisUtterance(text)
       u.rate = 1.2
       window.speechSynthesis.speak(u)
+    } catch (e) {
+      // Ignore speech synthesis failures
     }
   }
+
+  // Clear all running timers and reset challenge states cleanly
+  const resetAllModes = useCallback(() => {
+    if (battleTimerRef.current) clearInterval(battleTimerRef.current)
+    if (speedTimerRef.current) clearInterval(speedTimerRef.current)
+    if (holdIntervalRef.current) clearInterval(holdIntervalRef.current)
+    if (speedTargetTimeoutRef.current) clearTimeout(speedTargetTimeoutRef.current)
+    targetCompletedRef.current = false
+    setGameMode('free')
+    setBattleState('ready')
+    setSpeedState('ready')
+    setSessionId(null)
+  }, [])
 
   useEffect(() => {
     if (gesture && gameMode === 'free') {
@@ -172,6 +280,8 @@ export default function App() {
 
   // ─── SHADOW BATTLE MODE LOGIC ───
   const startBattle = async (overrideCategory) => {
+    resumeAudio()
+    resetAllModes()
     playChallengStart()
     setBossIndex(0)
     const boss = BOSS_LIST[0]
@@ -186,23 +296,20 @@ export default function App() {
       : activeCategory === 'animals'
         ? boss.vulnerabilities
         : boss.vulnerabilitiesThings
-    setBattleFeedback('Battle Started! Cast ' + GESTURE_INFO[vuls[0]].label + ' to attack!')
+    setBattleFeedback('Round started. Form ' + GESTURE_INFO[vuls[0]].label + ' to counter opponent.')
     
-    // Choose initial random vulnerability
     const initialVul = vuls[Math.floor(Math.random() * vuls.length)]
     setBattleVulnerability(initialVul)
     setBattleState('playing')
     setGameMode('battle')
-    speak(`Prepare to battle ${boss.name}! Cast ${GESTURE_INFO[initialVul].label}!`)
+    speak(`Prepare to counter ${boss.name}! Form ${GESTURE_INFO[initialVul].label}!`)
 
-    // Start background session on database
     try {
       const res = await startChallenge(GUEST_ID)
       if (res && res.sessionId) {
         setSessionId(res.sessionId)
       }
     } catch (e) {
-      console.warn('Backend unavailable, scoring offline.')
       setSessionId(null)
     }
   }
@@ -212,7 +319,7 @@ export default function App() {
     if (gameMode === 'battle' && battleState === 'playing' && playerHp === 0) {
       setBattleState('gameover')
       playError()
-      speak('Defeat! The shadow beast prevailed.')
+      speak('Challenge ended.')
       saveScore(GUEST_ID, battleScore)
     }
   }, [playerHp, gameMode, battleState, battleScore])
@@ -224,7 +331,6 @@ export default function App() {
     battleTimerRef.current = setInterval(() => {
       setBattleTimer((t) => {
         if (t <= 1) {
-          // Boss attacks player!
           const currentBoss = BOSS_LIST[bossIndex]
           const currentVul = latestVulRef.current
           const currentGest = latestGestureRef.current
@@ -244,8 +350,8 @@ export default function App() {
               setShakePlayer(true)
               setTimeout(() => setShakePlayer(false), 500)
               playError()
-              setBattleFeedback(`${currentBoss.name} strikes! You lost 20 HP!`)
-              speak('Ouch! Look out!')
+              setBattleFeedback(`${currentBoss.name} timed out. 20 HP deducted.`)
+              speak('Time expired.')
             }
             return nextHp
           })
@@ -274,7 +380,6 @@ export default function App() {
         } else {
           setBossHp(prev => prev - damage)
           
-          // Randomize vulnerability on successful hits to keep it dynamic
           const remainingVuls = category === 'all'
             ? [...currentBoss.vulnerabilities, ...currentBoss.vulnerabilitiesThings]
             : category === 'animals'
@@ -282,8 +387,8 @@ export default function App() {
               : currentBoss.vulnerabilitiesThings
           const nextVul = remainingVuls[Math.floor(Math.random() * remainingVuls.length)]
           setBattleVulnerability(nextVul)
-          setBattleFeedback(`Direct hit! Spell shifting... Cast ${GESTURE_INFO[nextVul].label}!`)
-          speak(`Hit! Quick, make ${GESTURE_INFO[nextVul].label}!`)
+          setBattleFeedback(`Hit registered. Form next sign: ${GESTURE_INFO[nextVul].label}.`)
+          speak(`Confirmed. Next: ${GESTURE_INFO[nextVul].label}.`)
 
           if (sessionId) {
             submitAttempt({
@@ -313,7 +418,6 @@ export default function App() {
       const newScore = battleScore + bonus
       setBattleScore(newScore)
 
-      // Submit final success attempt
       if (sessionId) {
         submitAttempt({
           sessionId,
@@ -324,14 +428,12 @@ export default function App() {
       }
 
       if (bossIndex + 1 >= BOSS_LIST.length) {
-        // Quest Cleared!
         const finalScore = newScore + playerHp * 2
         setBattleScore(finalScore)
         setBattleState('victory')
-        speak('Victory! You have cleared the Shadow Quest!')
+        speak('Round completed.')
         saveScore(GUEST_ID, finalScore)
       } else {
-        // Go to next Boss
         const nextIndex = bossIndex + 1
         const nextBoss = BOSS_LIST[nextIndex]
         setBossIndex(nextIndex)
@@ -344,14 +446,16 @@ export default function App() {
             : nextBoss.vulnerabilitiesThings
         const nextVul = vuls[Math.floor(Math.random() * vuls.length)]
         setBattleVulnerability(nextVul)
-        setBattleFeedback(`You defeated ${currentBoss.name}! Now facing ${nextBoss.name}!`)
-        speak(`Victory! Prepare to face ${nextBoss.name}!`)
+        setBattleFeedback(`Round ${bossIndex + 1} cleared. Moving to ${nextBoss.name}.`)
+        speak(`Cleared. Next round: ${nextBoss.name}.`)
       }
     }
   }, [bossHp, gameMode, battleState]) // eslint-disable-line
 
   // ─── TIME ATTACK (SPEED RUN) LOGIC ───
   const startSpeedrun = async (overrideCategory) => {
+    resumeAudio()
+    resetAllModes()
     playChallengStart()
     setSpeedScore(0)
     setSpeedTimer(30)
@@ -368,17 +472,15 @@ export default function App() {
     setSpeedTarget(initialTarget)
     setSpeedState('playing')
     setGameMode('speedrun')
-    setSpeedFeedback('Time Attack started! Make a ' + GESTURE_INFO[initialTarget].label + '!')
-    speak(`Time Attack started! Make ${GESTURE_INFO[initialTarget].label}!`)
+    setSpeedFeedback('Time Attack started. Form ' + GESTURE_INFO[initialTarget].label + '.')
+    speak(`Time Attack started. Form ${GESTURE_INFO[initialTarget].label}.`)
 
-    // Start background database session
     try {
       const res = await startChallenge(GUEST_ID)
       if (res && res.sessionId) {
         setSessionId(res.sessionId)
       }
     } catch (e) {
-      console.warn('Backend offline, scoring offline.')
       setSessionId(null)
     }
   }
@@ -387,8 +489,9 @@ export default function App() {
   useEffect(() => {
     if (gameMode === 'speedrun' && speedState === 'playing' && speedTimer === 0) {
       setSpeedState('gameover')
+      if (speedTargetTimeoutRef.current) clearTimeout(speedTargetTimeoutRef.current)
       playError()
-      speak(`Time is up! You scored ${speedScore} points.`)
+      speak(`Time expired. Total score: ${speedScore}.`)
       saveScore(GUEST_ID, speedScore)
     }
   }, [speedTimer, gameMode, speedState, speedScore])
@@ -415,76 +518,67 @@ export default function App() {
       const newStreak = speedStreak + 1
       setSpeedStreak(newStreak)
       
-      // Calculate score with streak bonus
       const points = 10 * Math.min(5, newStreak)
       const newScore = speedScore + points
       setSpeedScore(newScore)
       
-      // Add +2s time bonus
       setSpeedTimer(t => Math.min(30, t + 2))
-      
-      setSpeedFeedback(`Correct! +${points} points! +2s Bonus!`)
+      setSpeedFeedback(`Correct sign. +${points} pts (+2s added).`)
 
-      // Submit attempt
       if (sessionId) {
         submitAttempt({
           sessionId,
           gesturePrompt: speedTarget,
           userGesture: gesture,
-          isCorrect: true
+          isCorrect: true,
+          points
         }).catch(() => {})
       }
       
-      // Load next random target
-      setTimeout(() => {
+      if (speedTargetTimeoutRef.current) clearTimeout(speedTargetTimeoutRef.current)
+      speedTargetTimeoutRef.current = setTimeout(() => {
         const pool = category === 'all'
           ? GESTURE_NAMES
           : category === 'animals'
             ? GESTURE_ANIMALS
             : GESTURE_THINGS
-        const nextTarget = pool.filter(g => g !== speedTarget)[Math.floor(Math.random() * (pool.length - 1))]
+        const filtered = pool.filter(g => g !== speedTarget)
+        const nextTarget = filtered.length > 0 
+          ? filtered[Math.floor(Math.random() * filtered.length)]
+          : pool[0]
         setSpeedTarget(nextTarget)
         targetCompletedRef.current = false
-        speak(GESTURE_INFO[nextTarget].label)
+        if (GESTURE_INFO[nextTarget]) {
+          speak(GESTURE_INFO[nextTarget].label)
+        }
       }, 500)
     }
   }, [gesture, speedTarget, gameMode, speedState, speedStreak, speedScore, category, sessionId]) // eslint-disable-line
 
   const handleStartGame = useCallback(({ mode, category: nextCategory }) => {
+    resumeAudio()
     setCategory(nextCategory)
     setIsSetupOpen(false)
     setGameStarted(true)
     if (mode === 'free') {
+      resetAllModes()
       setGameMode('free')
+      navigate('/')
     } else if (mode === 'battle') {
+      navigate('/battle')
       startBattle(nextCategory)
     } else if (mode === 'speedrun') {
+      navigate('/speedrun')
       startSpeedrun(nextCategory)
     }
-  }, [category]) // eslint-disable-line
+  }, [category, resetAllModes, navigate]) // eslint-disable-line
 
-  if (!gameStarted) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', zIndex: 1, position: 'relative' }}>
-        <Starfield theme={theme} />
-        <SplashScreen onPlayClick={() => setIsSetupOpen(true)} theme={theme} />
-        <PlaySetupModal 
-          isOpen={isSetupOpen}
-          onClose={() => setIsSetupOpen(false)}
-          onStartGame={handleStartGame}
-        />
-      </div>
-    )
-  }
+  // Route: 404 handler
+  const knownPaths = ['/', '/guide', '/battle', '/speedrun', '/leaderboard', '/about', '/privacy', '/terms', '/cookies']
+  const is404 = !knownPaths.includes(currentPath)
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', zIndex: 1, position: 'relative' }}>
-      <Starfield theme={theme} />
-
-      {/* Glow Orbs background */}
-      <div className="glow-orb" style={{ top: '10%', left: '5%' }}></div>
-      <div className="glow-orb glow-orb-cyan" style={{ bottom: '15%', right: '10%' }}></div>
-
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       {/* ── HEADER ── */}
       <Header 
         guestId={GUEST_ID}
@@ -493,436 +587,462 @@ export default function App() {
         voiceEnabled={voiceEnabled}
         setVoiceEnabled={setVoiceEnabled}
         speak={speak}
+        onNavigate={navigate}
       />
 
       {/* ── CORE WRAPPER (SIDEBAR + MAIN CONTENT) ── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'row', flexWrap: 'wrap', zIndex: 10 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
         {/* ── SIDEBAR NAVIGATION ── */}
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <Sidebar activeTab={getActiveTab()} onNavigate={navigate} />
 
         {/* ── MAIN CONTENT CONTAINER ── */}
-        <main style={{ flex: 1, padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: 24, overflowY: 'auto' }}>
+        <main style={{ flex: 1, padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 20, overflowY: 'auto' }}>
           
-          {/* TAB 1: GAME ARCADE */}
-          {activeTab === 'dashboard' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-              
-              {/* Play Area: Camera & Projection Wall side-by-side */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-                gap: 24,
-                width: '100%'
-              }}>
-                {/* Webcam Panel */}
-                <div className="glass-panel" style={{ 
-                  padding: 20, 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: 12,
-                  boxShadow: '0 8px 30px rgba(6, 182, 212, 0.05)',
-                  position: 'relative'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ fontSize: 18, color: 'var(--text)' }}>AI Visor Stream</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span className="live-dot" />
-                      <span style={{ fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.05em', fontWeight: 600 }}>TRACKING</span>
-                    </div>
-                  </div>
-                  <WebcamFeed onHandResult={handleHandResult} />
-                </div>
+          {/* Breadcrumbs for sub-pages */}
+          <Breadcrumbs path={currentPath} onNavigate={navigate} />
 
-                {/* Projection Canvas Panel */}
-                <div className="glass-panel" style={{ 
-                  padding: 20, 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: 12,
-                  boxShadow: '0 8px 30px rgba(147, 51, 234, 0.05)',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}>
-                  {/* Glowing Projector Beam Effect */}
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '4px',
-                    background: gesture 
-                      ? `linear-gradient(90deg, transparent, ${GESTURE_INFO[gesture]?.color || 'var(--accent-purple)'}, transparent)` 
-                      : 'transparent',
-                    animation: 'beam-flow 1.5s linear infinite',
-                    backgroundSize: '200% auto',
-                    opacity: gesture ? 0.7 : 0
-                  }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ fontSize: 18, color: 'var(--text)' }}>Shadow Canvas</h3>
-                    <span style={{
-                      fontSize: 11,
-                      color: gesture ? GESTURE_INFO[gesture].color : 'var(--text-muted)',
-                      fontWeight: 700,
-                      background: gesture ? `${GESTURE_INFO[gesture].color}15` : 'rgba(255,255,255,0.02)',
-                      padding: '2px 10px',
-                      borderRadius: 20,
-                      border: `1px solid ${gesture ? GESTURE_INFO[gesture].color + '33' : 'var(--border)'}`,
-                      letterSpacing: '0.05em'
-                    }}>
-                      {gesture ? GESTURE_INFO[gesture].label.toUpperCase() : 'NO SHADOW'}
-                    </span>
-                  </div>
-                  <ShadowCanvas gesture={gesture} center={center} flash={flash} />
+          {/* 404 View */}
+          {is404 && (
+            <NotFound onNavigate={navigate} />
+          )}
+
+          {/* PRIVACY POLICY PAGE */}
+          {currentPath === '/privacy' && (
+            <div className="glass-panel" style={{ padding: '28px 32px' }}>
+              <PrivacyPolicy />
+            </div>
+          )}
+
+          {/* TERMS AND CONDITIONS PAGE */}
+          {currentPath === '/terms' && (
+            <div className="glass-panel" style={{ padding: '28px 32px' }}>
+              <TermsAndConditions />
+            </div>
+          )}
+
+          {/* COOKIE & LOCAL STORAGE POLICY PAGE */}
+          {currentPath === '/cookies' && (
+            <div className="glass-panel" style={{ padding: '28px 32px' }}>
+              <CookiePolicy />
+            </div>
+          )}
+
+          {/* GESTURE GUIDE / LIBRARY */}
+          {currentPath === '/guide' && (
+            <div className="glass-panel" style={{ padding: 24 }}>
+              <Gallery onClose={() => navigate('/')} />
+            </div>
+          )}
+
+          {/* LEADERBOARDS */}
+          {currentPath === '/leaderboard' && (
+            <div className="glass-panel" style={{ padding: 24, maxWidth: 640, margin: '0 auto', width: '100%' }}>
+              <Leaderboard guestId={GUEST_ID} onClose={() => navigate('/')} />
+            </div>
+          )}
+
+          {/* HOW IT WORKS */}
+          {currentPath === '/about' && (
+            <div className="glass-panel" style={{ padding: 32, maxWidth: 760, margin: '0 auto' }}>
+              <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)', marginBottom: 16 }}>
+                How ShadowPlay Computer Vision Operates
+              </h1>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, color: 'var(--text-dim)', lineHeight: 1.6, fontSize: 14 }}>
+                <p>
+                  ShadowPlay executes hand gesture classification entirely within your client web browser. Utilizing MediaPipe Hand landmark estimation via WebAssembly and WebGL, the browser processes 21 three-dimensional skeletal coordinates in real time.
+                </p>
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                  <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', margin: '0 0 8px 0' }}>
+                    Client-Side Data Isolation
+                  </h2>
+                  <p style={{ margin: 0 }}>
+                    Video camera streams are processed locally in your browser frame-by-frame and immediately discarded from memory. No audio, image, or video stream is ever transmitted over the network or recorded on external servers.
+                  </p>
+                </div>
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                  <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', margin: '0 0 8px 0' }}>
+                    Geometric Rule Classification
+                  </h2>
+                  <p style={{ margin: 0 }}>
+                    Our rule-based classifier evaluates Euclidean distance ratios between the wrist landmark, metacarpophalangeal (MCP) knuckles, proximal interphalangeal (PIP) joints, and fingertips. Hand shape recognition is rotation-invariant, ensuring reliable detection across various angles and distances.
+                  </p>
+                </div>
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                  <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', margin: '0 0 8px 0' }}>
+                    Hardware Acceleration & Audio Feedback
+                  </h2>
+                  <p style={{ margin: 0 }}>
+                    Shadow silhouettes are rendered on an HTML5 2D Canvas with sub-pixel path tracing. Audio cues are generated synthetically using the standard Web Audio API oscillators, avoiding external audio tracking dependencies.
+                  </p>
                 </div>
               </div>
+            </div>
+          )}
 
-              {/* Central Controller Box */}
-              <div className="glass-panel" style={{ padding: 24 }}>
-                
-                {/* Category Switcher Tabs */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: 20,
-                  flexWrap: 'wrap',
-                  gap: 12,
-                  borderBottom: '1px dashed var(--border)',
-                  paddingBottom: 16
-                }}>
-                  <div>
-                    <h4 style={{ fontSize: 16, color: 'var(--text)' }}>Play Category Selection</h4>
-                    <p style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 2 }}>Practice shadow animals or everyday objects.</p>
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 12,
-                    padding: 4,
-                    gap: 4
-                  }}>
-                    <button 
-                      onClick={() => setCategory('animals')}
-                      style={{
-                        padding: '6px 14px',
-                        borderRadius: 8,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        background: category === 'animals' ? 'var(--accent-orange)' : 'transparent',
-                        color: category === 'animals' ? '#fff' : 'var(--text-dim)',
-                        transition: 'all 0.2s ease',
-                      }}
-                    >
-                      🐕 Animals
-                    </button>
-                    <button 
-                      onClick={() => setCategory('things')}
-                      style={{
-                        padding: '6px 14px',
-                        borderRadius: 8,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        background: category === 'things' ? 'var(--accent-orange)' : 'transparent',
-                        color: category === 'things' ? '#fff' : 'var(--text-dim)',
-                        transition: 'all 0.2s ease',
-                      }}
-                    >
-                      ⚙️ Things
-                    </button>
-                    <button 
-                      onClick={() => setCategory('all')}
-                      style={{
-                        padding: '6px 14px',
-                        borderRadius: 8,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        background: category === 'all' ? 'var(--accent-orange)' : 'transparent',
-                        color: category === 'all' ? '#fff' : 'var(--text-dim)',
-                        transition: 'all 0.2s ease',
-                      }}
-                    >
-                      🌀 All
-                    </button>
-                  </div>
+          {/* DASHBOARD / STUDIO / BATTLE / SPEEDRUN VIEW */}
+          {(currentPath === '/' || currentPath === '/battle' || currentPath === '/speedrun') && (
+            <>
+              {/* Optional Splash / Intro view before initial camera initialization */}
+              {!gameStarted && currentPath === '/' ? (
+                <div>
+                  <SplashScreen onPlayClick={() => { setGameStarted(true); setIsSetupOpen(true); }} />
                 </div>
-
-                {/* Game mode selector tabs */}
-                <div style={{
-                  display: 'flex',
-                  borderBottom: '1px solid var(--border)',
-                  marginBottom: 24,
-                  gap: 8,
-                  alignItems: 'center'
-                }}>
-                  <button 
-                    onClick={() => { setGameMode('free'); clearInterval(battleTimerRef.current); clearInterval(speedTimerRef.current); }} 
-                    style={{
-                      padding: '12px 24px',
-                      background: 'none',
-                      color: gameMode === 'free' ? 'var(--accent-cyan)' : 'var(--text-dim)',
-                      fontWeight: 600,
-                      fontSize: 15,
-                      borderBottom: gameMode === 'free' ? '2px solid var(--accent-cyan)' : '2px solid transparent',
-                    }}
-                  >
-                    🧘 Free Play Practice
-                  </button>
-                  {gameMode === 'battle' && (
-                    <button 
-                      style={{
-                        padding: '12px 24px',
-                        background: 'none',
-                        color: 'var(--accent-purple)',
-                        fontWeight: 600,
-                        fontSize: 15,
-                        borderBottom: '2px solid var(--accent-purple)',
-                      }}
-                    >
-                      ⚔️ Shadow Quest (Active)
-                    </button>
-                  )}
-                  {gameMode === 'speedrun' && (
-                    <button 
-                      style={{
-                        padding: '12px 24px',
-                        background: 'none',
-                        color: 'var(--accent-pink)',
-                        fontWeight: 600,
-                        fontSize: 15,
-                        borderBottom: '2px solid var(--accent-pink)',
-                      }}
-                    >
-                      ⏱ Time Attack (Active)
-                    </button>
-                  )}
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                   
-                  {gameMode !== 'free' ? (
-                    <button
-                      onClick={() => { setGameMode('free'); clearInterval(battleTimerRef.current); clearInterval(speedTimerRef.current); }}
-                      style={{
-                        marginLeft: 'auto',
-                        padding: '8px 16px',
-                        borderRadius: 10,
-                        fontSize: 12,
-                        fontWeight: 700,
-                        background: 'rgba(239, 68, 68, 0.1)',
-                        color: 'var(--accent-pink)',
-                        border: '1px solid rgba(239, 68, 68, 0.2)',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                      }}
-                    >
-                      Quit Challenge 🚪
-                    </button>
-                  ) : (
-                    <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-                      <button
-                        onClick={() => { setGameStarted(false); clearInterval(battleTimerRef.current); clearInterval(speedTimerRef.current); }}
-                        style={{
-                          padding: '8px 16px',
-                          borderRadius: 10,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          background: 'rgba(255,255,255,0.03)',
-                          color: 'var(--text-dim)',
-                          border: '1px solid var(--border)',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                        }}
-                      >
-                        Exit to Menu 🚪
-                      </button>
-                      <button
-                        onClick={() => setIsSetupOpen(true)}
-                        style={{
-                          padding: '8px 20px',
-                          borderRadius: 10,
-                          fontSize: 13,
-                          fontWeight: 700,
-                          background: 'linear-gradient(135deg, var(--accent-orange), var(--accent-gold))',
-                          color: '#000',
-                          border: 'none',
-                          boxShadow: '0 4px 15px rgba(245, 158, 11, 0.25)',
-                          transition: 'all 0.2s',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        🎮 Play Game
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* ── FREE PLAY PANEL ── */}
-                {gameMode === 'free' && (
-                  <div style={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    minHeight: 180,
-                    textAlign: 'center',
-                    gap: 16
+                  {/* Top Camera & Shadow Projection Area */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+                    gap: 20,
+                    width: '100%'
                   }}>
-                    {gesture ? (
-                      <div style={{ 
-                        animation: 'slideUp 0.3s ease-out',
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 
-                      }}>
-                        <div style={{ fontSize: 64 }}>{GESTURE_INFO[gesture].emoji}</div>
-                        <h2 style={{ fontSize: 32, color: GESTURE_INFO[gesture].color }}>
-                          {GESTURE_INFO[gesture].label}
-                        </h2>
-                        <p style={{ color: 'var(--text-dim)', maxWidth: 400 }}>
-                          {GESTURE_INFO[gesture].description}
-                        </p>
+                    {/* Camera Feed */}
+                    <div className="glass-panel" style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', margin: 0 }}>Camera Video Feed</h2>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span className="live-dot" />
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.04em', fontWeight: 600 }}>ACTIVE</span>
+                        </div>
                       </div>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                        <div style={{ fontSize: 48, opacity: 0.3 }}>✋</div>
-                        <h3 style={{ color: 'var(--text-dim)', fontWeight: 500 }}>Form a hand shadow sign to begin</h3>
-                        <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-                          Need help? Switch to the <strong>Gesture Guide</strong> tab to learn how.
-                        </p>
+                      <WebcamFeed onHandResult={handleHandResult} />
+                    </div>
+
+                    {/* Shadow Projection */}
+                    <div className="glass-panel" style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', margin: 0 }}>Shadow Projection Wall</h2>
+                        <span style={{
+                          fontSize: 11,
+                          color: gesture ? GESTURE_INFO[gesture]?.color : 'var(--text-muted)',
+                          fontWeight: 600,
+                          background: 'var(--bg-card)',
+                          padding: '2px 8px',
+                          borderRadius: 4,
+                          border: '1px solid var(--border)',
+                          letterSpacing: '0.04em'
+                        }}>
+                          {gesture ? GESTURE_INFO[gesture]?.label.toUpperCase() : 'SEARCHING FOR HAND'}
+                        </span>
+                      </div>
+                      <ShadowCanvas gesture={gesture} center={center} flash={flash} />
+                    </div>
+                  </div>
+
+                  {/* Controller & Practice Panel */}
+                  <div className="glass-panel" style={{ padding: 20 }}>
+                    {/* Category Selector Bar */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 16,
+                      flexWrap: 'wrap',
+                      gap: 12,
+                      borderBottom: '1px solid var(--border)',
+                      paddingBottom: 14
+                    }}>
+                      <div>
+                        <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: 0 }}>Gesture Library Filter</h3>
+                        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0 0' }}>Filter active targets by classification category.</p>
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        background: 'var(--bg-card)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 4,
+                        padding: 2,
+                        gap: 2
+                      }}>
+                        <button 
+                          type="button"
+                          onClick={() => setCategory('animals')}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: 4,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            background: category === 'animals' ? 'var(--accent-orange)' : 'transparent',
+                            color: category === 'animals' ? '#ffffff' : 'var(--text-dim)',
+                            border: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Animals
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => setCategory('things')}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: 4,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            background: category === 'things' ? 'var(--accent-orange)' : 'transparent',
+                            color: category === 'things' ? '#ffffff' : 'var(--text-dim)',
+                            border: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Objects
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => setCategory('all')}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: 4,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            background: category === 'all' ? 'var(--accent-orange)' : 'transparent',
+                            color: category === 'all' ? '#ffffff' : 'var(--text-dim)',
+                            border: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          All Gestures
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Mode Navigation Tabs */}
+                    <div style={{
+                      display: 'flex',
+                      borderBottom: '1px solid var(--border)',
+                      marginBottom: 20,
+                      gap: 8,
+                      alignItems: 'center',
+                      flexWrap: 'wrap'
+                    }}>
+                      <button 
+                        type="button"
+                        onClick={() => { resetAllModes(); navigate('/'); }} 
+                        style={{
+                          padding: '10px 18px',
+                          background: 'none',
+                          color: gameMode === 'free' ? 'var(--accent-orange)' : 'var(--text-dim)',
+                          fontWeight: 600,
+                          fontSize: 14,
+                          border: 'none',
+                          borderBottom: gameMode === 'free' ? '2px solid var(--accent-orange)' : '2px solid transparent',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8
+                        }}
+                      >
+                        <PracticeIcon size={16} />
+                        <span>Free Practice</span>
+                      </button>
+
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          if (gameMode !== 'battle') {
+                            startBattle()
+                          }
+                          navigate('/battle')
+                        }} 
+                        style={{
+                          padding: '10px 18px',
+                          background: 'none',
+                          color: gameMode === 'battle' ? 'var(--accent-orange)' : 'var(--text-dim)',
+                          fontWeight: 600,
+                          fontSize: 14,
+                          border: 'none',
+                          borderBottom: gameMode === 'battle' ? '2px solid var(--accent-orange)' : '2px solid transparent',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8
+                        }}
+                      >
+                        <QuestIcon size={16} />
+                        <span>Shadow Quest</span>
+                      </button>
+
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          if (gameMode !== 'speedrun') {
+                            startSpeedrun()
+                          }
+                          navigate('/speedrun')
+                        }} 
+                        style={{
+                          padding: '10px 18px',
+                          background: 'none',
+                          color: gameMode === 'speedrun' ? 'var(--accent-orange)' : 'var(--text-dim)',
+                          fontWeight: 600,
+                          fontSize: 14,
+                          border: 'none',
+                          borderBottom: gameMode === 'speedrun' ? '2px solid var(--accent-orange)' : '2px solid transparent',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8
+                        }}
+                      >
+                        <TimerIcon size={16} />
+                        <span>Time Attack</span>
+                      </button>
+
+                      {/* Right utility buttons */}
+                      <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+                        {gameMode !== 'free' && (
+                          <button
+                            type="button"
+                            onClick={() => { resetAllModes(); navigate('/'); }}
+                            className="btn btn-secondary"
+                            style={{ fontSize: 12, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}
+                          >
+                            <ExitIcon size={14} />
+                            <span>Exit Mode</span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setIsSetupOpen(true)}
+                          className="btn btn-primary"
+                          style={{ fontSize: 12, padding: '6px 14px' }}
+                        >
+                          Configure Session
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Free Practice Display */}
+                    {gameMode === 'free' && (
+                      <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        minHeight: 160,
+                        textAlign: 'center',
+                        gap: 12,
+                        padding: '12px 0'
+                      }}>
+                        {gesture ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                            <div style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '3px 10px',
+                              borderRadius: 4,
+                              background: 'var(--bg-card)',
+                              border: '1px solid var(--border)',
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: GESTURE_INFO[gesture]?.color || 'var(--accent-orange)',
+                              letterSpacing: '0.04em',
+                              textTransform: 'uppercase'
+                            }}>
+                              <span>Identified Shape</span>
+                            </div>
+                            <h3 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                              {GESTURE_INFO[gesture]?.label}
+                            </h3>
+                            <p style={{ color: 'var(--text-dim)', maxWidth: 440, fontSize: 13, lineHeight: 1.5, margin: 0 }}>
+                              {GESTURE_INFO[gesture]?.description}
+                            </p>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                            <div style={{ color: 'var(--text-muted)' }}>
+                              <PracticeIcon size={32} />
+                            </div>
+                            <h3 style={{ color: 'var(--text)', fontWeight: 600, fontSize: 15, margin: 0 }}>
+                              Form a hand silhouette in front of your camera
+                            </h3>
+                            <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>
+                              Open the <button type="button" onClick={() => navigate('/guide')} style={{ background: 'none', border: 'none', color: 'var(--accent-orange)', textDecoration: 'underline', cursor: 'pointer', padding: 0, font: 'inherit' }}>Gesture Reference</button> to view finger placement guides.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    {/* Centered Play Game CTA */}
-                    <div style={{
-                      marginTop: 16,
-                      padding: '16px 24px',
-                      background: 'rgba(255, 255, 255, 0.02)',
-                      border: '1px dashed var(--border)',
-                      borderRadius: 16,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 8,
-                      maxWidth: 400,
-                    }}>
-                      <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>Ready for the real trial?</span>
-                      <button
-                        onClick={() => setIsSetupOpen(true)}
-                        style={{
-                          padding: '8px 20px',
-                          borderRadius: 8,
-                          fontWeight: 700,
-                          background: 'linear-gradient(135deg, var(--accent-orange), var(--accent-gold))',
-                          color: '#000',
-                          fontSize: 13,
-                          cursor: 'pointer',
-                          border: 'none',
-                          boxShadow: '0 4px 12px rgba(245, 158, 11, 0.2)',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        🎮 Play Game
-                      </button>
-                    </div>
+                    {/* Shadow Quest Panel */}
+                    {gameMode === 'battle' && (
+                      <BattlePanel 
+                        battleState={battleState}
+                        startBattle={startBattle}
+                        bossIndex={bossIndex}
+                        bossHp={bossHp}
+                        playerHp={playerHp}
+                        battleTimer={battleTimer}
+                        battleVulnerability={battleVulnerability}
+                        battleFeedback={battleFeedback}
+                        battleScore={battleScore}
+                        shakePlayer={shakePlayer}
+                        hitBoss={hitBoss}
+                        BOSS_LIST={BOSS_LIST}
+                        GESTURE_INFO={GESTURE_INFO}
+                        category={category}
+                        setCategory={setCategory}
+                      />
+                    )}
+
+                    {/* Time Attack Panel */}
+                    {gameMode === 'speedrun' && (
+                      <SpeedrunPanel 
+                        speedState={speedState}
+                        startSpeedrun={startSpeedrun}
+                        speedTimer={speedTimer}
+                        speedScore={speedScore}
+                        speedStreak={speedStreak}
+                        speedTarget={speedTarget}
+                        speedFeedback={speedFeedback}
+                        GESTURE_INFO={GESTURE_INFO}
+                        category={category}
+                        setCategory={setCategory}
+                      />
+                    )}
+
                   </div>
-                )}
-
-                {/* ── SHADOW BATTLE (QUEST) PANEL ── */}
-                {gameMode === 'battle' && (
-                  <BattlePanel 
-                    battleState={battleState}
-                    startBattle={startBattle}
-                    bossIndex={bossIndex}
-                    bossHp={bossHp}
-                    playerHp={playerHp}
-                    battleTimer={battleTimer}
-                    battleVulnerability={battleVulnerability}
-                    battleFeedback={battleFeedback}
-                    battleScore={battleScore}
-                    shakePlayer={shakePlayer}
-                    hitBoss={hitBoss}
-                    BOSS_LIST={BOSS_LIST}
-                    GESTURE_INFO={GESTURE_INFO}
-                    category={category}
-                    setCategory={setCategory}
-                  />
-                )}
-
-                {/* ── TIME ATTACK PANEL ── */}
-                {gameMode === 'speedrun' && (
-                  <SpeedrunPanel 
-                    speedState={speedState}
-                    startSpeedrun={startSpeedrun}
-                    speedTimer={speedTimer}
-                    speedScore={speedScore}
-                    speedStreak={speedStreak}
-                    speedTarget={speedTarget}
-                    speedFeedback={speedFeedback}
-                    GESTURE_INFO={GESTURE_INFO}
-                    category={category}
-                    setCategory={setCategory}
-                  />
-                )}
-
-              </div>
-
-            </div>
-          )}
-
-          {/* TAB 2: GESTURE GUIDE */}
-          {activeTab === 'learn' && (
-            <div className="glass-panel" style={{ padding: 24 }}>
-              <Gallery onClose={() => setActiveTab('dashboard')} />
-            </div>
-          )}
-
-          {/* TAB 3: LEADERBOARDS */}
-          {activeTab === 'leaderboard' && (
-            <div className="glass-panel" style={{ padding: 24, maxWidth: 500, margin: '0 auto', width: '100%' }}>
-              <Leaderboard guestId={GUEST_ID} onClose={() => setActiveTab('dashboard')} />
-            </div>
-          )}
-
-          {/* TAB 4: HOW IT WORKS */}
-          {activeTab === 'about' && (
-            <div className="glass-panel" style={{ padding: 32, maxWidth: 700, margin: '0 auto' }}>
-              <h2 style={{ fontSize: 28, color: 'var(--accent-purple)', marginBottom: 16 }}>How ShadowPlay AI Works</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, color: 'var(--text-dim)', lineHeight: 1.6 }}>
-                <p>
-                  ShadowPlay AI combines browser-based WebRTC webcam access, real-time machine learning, and hardware-accelerated rendering to cast realistic hand shadow puppets on your screen.
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <h3 style={{ fontSize: 18, color: 'var(--text)', marginTop: 8 }}>🔒 On-Device Privacy First</h3>
-                  <p>
-                    All hand landmark tracking is calculated entirely inside your web browser using MediaPipe. Your camera feeds or video frames are <strong>never sent to a remote server</strong>.
-                  </p>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <h3 style={{ fontSize: 18, color: 'var(--text)', marginTop: 8 }}>🖐 21-Landmark Gesture Recognition</h3>
-                  <p>
-                    The AI processes your hand shape into 21 distinct 3D coordinates. The game rules evaluate the vertical heights and horizontal positions of your fingertips compared to your knuckles (MCP joints) to classify whether you are making a Rabbit, Dog, Bird, Butterfly, or Snake.
-                  </p>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <h3 style={{ fontSize: 18, color: 'var(--text)', marginTop: 8 }}>🎙 Speech Narration</h3>
-                  <p>
-                    By checking the speech synthesis speaker button, the game reads out your recognized shadow puppet shapes using the Web Speech API.
-                  </p>
-                </div>
-              </div>
-            </div>
+              )}
+            </>
           )}
 
         </main>
       </div>
 
+      {/* ── FOOTER (COMPLIANCE & LEGAL NOTICES) ── */}
       <footer style={{
-        padding: '16px 24px',
-        textAlign: 'center',
+        padding: '24px 20px',
         color: 'var(--text-muted)',
         fontSize: 12,
         borderTop: '1px solid var(--border)',
-        background: 'rgba(4, 2, 9, 0.6)',
+        background: 'var(--bg-card)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 12,
+        zIndex: 50
       }}>
-        ShadowPlay.AI &bull; On-device private hand intelligence. &bull; Created with &hearts;
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18, justifyContent: 'center' }}>
+          <button type="button" onClick={() => navigate('/privacy')} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Privacy Policy</button>
+          <button type="button" onClick={() => navigate('/terms')} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Terms of Service</button>
+          <button type="button" onClick={() => navigate('/cookies')} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Cookie Policy</button>
+          <button type="button" onClick={() => navigate('/about')} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>How It Works</button>
+          <button type="button" onClick={() => navigate('/guide')} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Gesture Library</button>
+        </div>
+        <div style={{ textAlign: 'center', lineHeight: 1.6 }}>
+          <span>&copy; 2026 ShadowPlay Studio. All rights reserved.</span>
+          <span style={{ display: 'block', fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+            Operated in compliance with the Digital Personal Data Protection Act, 2023 (India) and global privacy standards. Camera processing is executed client-side only.
+          </span>
+        </div>
       </footer>
 
+      {/* Cookie Consent Banner */}
+      <CookieBanner onOpenPolicy={() => navigate('/cookies')} />
+
+      {/* Play Configuration Modal */}
       <PlaySetupModal 
         isOpen={isSetupOpen}
         onClose={() => setIsSetupOpen(false)}

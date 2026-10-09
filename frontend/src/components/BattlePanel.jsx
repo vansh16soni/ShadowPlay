@@ -1,4 +1,5 @@
 import React from 'react'
+import { QuestIcon, ShieldIcon, TrophyIcon, WarningIcon } from './Icons'
 
 export default function BattlePanel({
   battleState,
@@ -20,85 +21,81 @@ export default function BattlePanel({
   return (
     <div>
       {battleState === 'ready' && (
-        <div style={{ textAlign: 'center', padding: '24px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-          <div style={{ fontSize: 52 }}>⚔️</div>
-          <h2 style={{ fontSize: 24, fontWeight: 700 }}>Shadow Battle Quest</h2>
-          <p style={{ color: 'var(--text-dim)', maxWidth: 500, lineHeight: 1.6, fontSize: 14 }}>
-            Embark on a mystic trial! Cast spells by copying the vulnerability shadow signs to defeat 3 monstrous shadow beasts before they attack!
+        <div style={{ textAlign: 'center', padding: '32px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            borderRadius: 4,
+            background: 'var(--surface-hover)',
+            border: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--accent)'
+          }}>
+            <QuestIcon size={24} />
+          </div>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)' }}>Shadow Quest Challenge</h2>
+          <p style={{ color: 'var(--text-dim)', maxWidth: 520, lineHeight: 1.6, fontSize: 14 }}>
+            Test your hand gesture speed across three progressive rounds. Form the requested shadow silhouette before each attack countdown expires.
           </p>
           <button 
             onClick={startBattle} 
             style={{
-              padding: '12px 32px',
-              borderRadius: 12,
-              fontWeight: 700,
-              background: 'linear-gradient(135deg, var(--accent-purple), var(--accent-pink))',
-              color: 'var(--text)',
-              fontSize: 16,
-              boxShadow: '0 4px 20px rgba(139, 92, 246, 0.3)',
+              padding: '10px 24px',
+              borderRadius: 4,
+              fontWeight: 600,
+              background: 'var(--accent)',
+              color: '#ffffff',
+              fontSize: 14,
+              border: 'none',
+              cursor: 'pointer'
             }}
           >
-            Enter Shadow Realm
+            Start Challenge
           </button>
         </div>
       )}
 
       {battleState === 'playing' && (
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 20
-        }} className={shakePlayer ? 'combat-shake' : ''}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className={shakePlayer ? 'combat-shake' : ''}>
           {/* Battle Arena HUD */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             fontSize: 13,
-            color: 'var(--text-dim)'
+            color: 'var(--text-muted)'
           }}>
-            <span>QUEST STAGE {bossIndex + 1}/3</span>
-            <span style={{ color: 'var(--accent-purple)', fontWeight: 700 }}>SCORE: {battleScore}</span>
+            <span style={{ fontWeight: 600 }}>Round {bossIndex + 1} of 3</span>
+            <span style={{ color: 'var(--text)', fontWeight: 700 }}>Score: {battleScore}</span>
           </div>
 
           {/* Monster Area */}
           <div style={{
             display: 'flex',
             flexWrap: 'wrap',
-            gap: 24,
+            gap: 20,
             alignItems: 'center',
-            background: 'rgba(0,0,0,0.2)',
+            background: 'var(--surface)',
             padding: 16,
-            borderRadius: 16,
+            borderRadius: 4,
             border: '1px solid var(--border)',
             justifyContent: 'space-between'
           }}>
             {/* Boss Card */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div 
-                className={hitBoss ? 'combat-hit' : ''}
-                style={{ 
-                  fontSize: 60, 
-                  borderRadius: 12,
-                  width: 80, height: 80,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'rgba(255,255,255,0.02)',
-                  border: `2px solid ${currentBoss.color}44`
-                }}
-              >
-                {currentBoss.emoji}
-              </div>
               <div>
-                <h3 style={{ fontSize: 18, color: currentBoss.color }}>{currentBoss.name}</h3>
-                <div style={{ fontSize: 11, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  HP: {bossHp} / {currentBoss.maxHp}
+                <h3 style={{ fontSize: 16, color: 'var(--text)' }}>{currentBoss.name}</h3>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  Opponent HP: {bossHp} / {currentBoss.maxHp}
                 </div>
                 {/* HP Bar */}
-                <div style={{ width: 150, height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3, marginTop: 4, overflow: 'hidden' }}>
+                <div style={{ width: 140, height: 6, background: 'var(--border)', borderRadius: 3, marginTop: 4, overflow: 'hidden' }}>
                   <div style={{ 
                     height: '100%', 
                     width: `${(bossHp / currentBoss.maxHp) * 100}%`, 
-                    background: currentBoss.color,
+                    background: 'var(--accent-red)',
                     transition: 'width 0.2s ease-out' 
                   }} />
                 </div>
@@ -108,26 +105,25 @@ export default function BattlePanel({
             {/* Action Prompt */}
             <div style={{ 
               textAlign: 'center',
-              padding: '12px 20px',
-              background: 'rgba(255,255,255,0.02)',
-              borderRadius: 12,
+              padding: '10px 16px',
+              background: 'var(--bg)',
+              borderRadius: 4,
               border: '1px solid var(--border)',
               minWidth: 160
             }}>
-              <div style={{ fontSize: 10, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Vulnerable to</div>
-              <div style={{ fontSize: 24 }}>{GESTURE_INFO[battleVulnerability]?.emoji}</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: GESTURE_INFO[battleVulnerability]?.color }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Required Sign</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--accent-gold)', marginTop: 2 }}>
                 {GESTURE_INFO[battleVulnerability]?.label}
               </div>
             </div>
 
             {/* Countdown Timer */}
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 10, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>BOSS ATTACK</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Time Remaining</div>
               <div style={{ 
-                fontSize: 32, 
-                fontFamily: 'var(--font-title)', 
-                color: battleTimer <= 2 ? 'var(--accent-pink)' : 'var(--text)' 
+                fontSize: 28, 
+                fontWeight: 700,
+                color: battleTimer <= 2 ? 'var(--accent-red)' : 'var(--text)' 
               }}>
                 {battleTimer}s
               </div>
@@ -139,26 +135,26 @@ export default function BattlePanel({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'rgba(255,255,255,0.02)',
-            padding: 14,
-            borderRadius: 12,
+            background: 'var(--surface)',
+            padding: 12,
+            borderRadius: 4,
             border: '1px solid var(--border)'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: 20 }}>🛡️</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <ShieldIcon size={18} color="var(--accent)" />
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>PLAYER SHIELD</div>
-                <div style={{ width: 140, height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3, marginTop: 4, overflow: 'hidden' }}>
+                <div style={{ fontSize: 12, fontWeight: 600 }}>Player Health: {playerHp}%</div>
+                <div style={{ width: 140, height: 6, background: 'var(--border)', borderRadius: 3, marginTop: 4, overflow: 'hidden' }}>
                   <div style={{ 
                     height: '100%', 
                     width: `${playerHp}%`, 
-                    background: 'var(--accent-cyan)',
+                    background: 'var(--accent-green)',
                     transition: 'width 0.3s ease-out' 
                   }} />
                 </div>
               </div>
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-dim)', fontStyle: 'italic' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
               {battleFeedback}
             </div>
           </div>
@@ -167,22 +163,23 @@ export default function BattlePanel({
 
       {/* Quest Victory Screen */}
       {battleState === 'victory' && (
-        <div style={{ textAlign: 'center', padding: '24px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-          <div style={{ fontSize: 60 }}>👑</div>
-          <h2 style={{ fontSize: 28, color: 'var(--accent-cyan)' }}>Quest Cleared!</h2>
-          <p style={{ color: 'var(--text-dim)' }}>You successfully banished the shadow beasts!</p>
-          <div style={{ fontSize: 36, fontFamily: 'var(--font-title)', color: 'var(--accent-purple)' }}>
-            {battleScore} PTS
+        <div style={{ textAlign: 'center', padding: '32px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+          <TrophyIcon size={40} color="var(--accent-gold)" />
+          <h2 style={{ fontSize: 24, color: 'var(--text)' }}>Challenge Completed</h2>
+          <p style={{ color: 'var(--text-dim)', fontSize: 14 }}>All three rounds cleared successfully.</p>
+          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text)' }}>
+            Score: {battleScore}
           </div>
           <button 
             onClick={startBattle} 
             style={{
-              padding: '12px 28px',
-              borderRadius: 10,
+              padding: '10px 24px',
+              borderRadius: 4,
               fontWeight: 600,
-              background: 'var(--surface-hover)',
-              border: '1px solid var(--border-glow)',
-              color: 'var(--text)'
+              background: 'var(--accent)',
+              color: '#ffffff',
+              border: 'none',
+              cursor: 'pointer'
             }}
           >
             Play Again
@@ -192,20 +189,21 @@ export default function BattlePanel({
 
       {/* Game Over Screen */}
       {battleState === 'gameover' && (
-        <div style={{ textAlign: 'center', padding: '24px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-          <div style={{ fontSize: 60 }}>💀</div>
-          <h2 style={{ fontSize: 28, color: 'var(--accent-pink)' }}>Defeated</h2>
-          <p style={{ color: 'var(--text-dim)' }}>The boss shadow defeated your ward shields.</p>
-          <div style={{ fontSize: 20 }}>Final Score: {battleScore} PTS</div>
+        <div style={{ textAlign: 'center', padding: '32px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+          <WarningIcon size={40} color="var(--accent-red)" />
+          <h2 style={{ fontSize: 24, color: 'var(--text)' }}>Round Failed</h2>
+          <p style={{ color: 'var(--text-dim)', fontSize: 14 }}>Player health depleted before completing the sequence.</p>
+          <div style={{ fontSize: 20, color: 'var(--text)' }}>Final Score: {battleScore}</div>
           <button 
             onClick={startBattle} 
             style={{
-              padding: '12px 28px',
-              borderRadius: 10,
+              padding: '10px 24px',
+              borderRadius: 4,
               fontWeight: 600,
-              background: 'var(--surface-hover)',
-              border: '1px solid var(--border-glow)',
-              color: 'var(--text)'
+              background: 'var(--accent)',
+              color: '#ffffff',
+              border: 'none',
+              cursor: 'pointer'
             }}
           >
             Try Again
