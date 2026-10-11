@@ -98,35 +98,35 @@ const FINGER_GUIDES = {
     { finger: 'Middle', state: 'UP', desc: 'Extended' },
     { finger: 'Ring', state: 'UP', desc: 'Extended' },
     { finger: 'Pinky', state: 'UP', desc: 'Extended' },
-    { finger: 'Thumb', state: 'DOWN', desc: 'Folded in loop' },
+    { finger: 'Thumb', state: 'OUT', desc: 'Extended in loop' },
   ],
   cup: [
-    { finger: 'Index', state: 'DOWN', desc: 'Folded in' },
-    { finger: 'Middle', state: 'DOWN', desc: 'Folded in' },
-    { finger: 'Ring', state: 'DOWN', desc: 'Folded in' },
-    { finger: 'Pinky', state: 'DOWN', desc: 'Folded in' },
-    { finger: 'Thumb', state: 'DOWN', desc: 'Folded in' },
+    { finger: 'Index', state: 'UP', desc: 'Curved (rim)' },
+    { finger: 'Middle', state: 'UP', desc: 'Curved (rim)' },
+    { finger: 'Ring', state: 'UP', desc: 'Curved (rim)' },
+    { finger: 'Pinky', state: 'UP', desc: 'Curved (rim)' },
+    { finger: 'Thumb', state: 'OUT', desc: 'Extended (handle)' },
   ],
   crown: [
-    { finger: 'Index', state: 'UP', desc: 'Extended (peak 1)' },
-    { finger: 'Middle', state: 'DOWN', desc: 'Folded' },
-    { finger: 'Ring', state: 'UP', desc: 'Extended (peak 2)' },
-    { finger: 'Pinky', state: 'UP', desc: 'Extended (peak 3)' },
-    { finger: 'Thumb', state: 'DOWN', desc: 'Folded' },
+    { finger: 'Index', state: 'UP', desc: 'Extended peak' },
+    { finger: 'Middle', state: 'UP', desc: 'Extended peak' },
+    { finger: 'Ring', state: 'UP', desc: 'Extended peak' },
+    { finger: 'Pinky', state: 'UP', desc: 'Extended peak' },
+    { finger: 'Thumb', state: 'DOWN', desc: 'Base support' },
   ],
   airplane: [
-    { finger: 'Index', state: 'UP', desc: 'Extended (wing)' },
+    { finger: 'Index', state: 'UP', desc: 'Nose forward' },
     { finger: 'Middle', state: 'DOWN', desc: 'Folded' },
-    { finger: 'Ring', state: 'UP', desc: 'Extended (wing)' },
-    { finger: 'Pinky', state: 'DOWN', desc: 'Folded' },
-    { finger: 'Thumb', state: 'DOWN', desc: 'Folded' },
+    { finger: 'Ring', state: 'DOWN', desc: 'Folded' },
+    { finger: 'Pinky', state: 'UP', desc: 'Wing tip' },
+    { finger: 'Thumb', state: 'OUT', desc: 'Wing tip' },
   ],
   eagle: [
-    { finger: 'Index', state: 'UP', desc: 'Extended (wing)' },
-    { finger: 'Middle', state: 'UP', desc: 'Extended (wing)' },
-    { finger: 'Ring', state: 'UP', desc: 'Extended (wing)' },
-    { finger: 'Pinky', state: 'UP', desc: 'Extended (wing)' },
-    { finger: 'Thumb', state: 'OUT', desc: 'Crossed thumbs' },
+    { finger: 'Index', state: 'UP', desc: 'Spread wing' },
+    { finger: 'Middle', state: 'UP', desc: 'Spread wing' },
+    { finger: 'Ring', state: 'UP', desc: 'Spread wing' },
+    { finger: 'Pinky', state: 'UP', desc: 'Spread wing' },
+    { finger: 'Thumb', state: 'OUT', desc: 'Beak' },
   ],
   deer: [
     { finger: 'Index', state: 'UP', desc: 'Extended (antlers)' },
@@ -156,17 +156,19 @@ function FingerDiagram({ name }) {
   if (!guide) return null
   return (
     <div style={{ marginTop: 14 }}>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', justifyContent: 'center', height: 80 }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', justifyContent: 'center', height: 75 }}>
         {guide.map(({ finger, state }) => (
           <div key={finger} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             <div style={{
               width: 12, 
               borderRadius: 2,
-              height: state === 'UP' ? 52 : state === 'OUT' ? 26 : 12,
-              background: state === 'DOWN' ? 'var(--border)' : 'var(--accent)',
-              opacity: state === 'DOWN' ? 0.4 : 1,
+              height: state === 'UP' ? 50 : state === 'OUT' ? 26 : 10,
+              background: state === 'DOWN' ? 'var(--border)' : 'var(--accent-orange)',
+              borderTop: state !== 'DOWN' ? '1px solid rgba(255,255,255,0.4)' : 'none',
+              boxShadow: state !== 'DOWN' ? '0 2px 6px rgba(217, 119, 6, 0.4)' : 'inset 0 1px 2px rgba(0,0,0,0.5)',
+              opacity: state === 'DOWN' ? 0.35 : 1,
             }} />
-            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>
+            <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 700 }}>
               {finger.slice(0, 1)}
             </span>
           </div>
@@ -184,76 +186,89 @@ export default function Gallery() {
   )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, perspective: 1200 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div>
           <h2 style={{ fontSize: 22, color: 'var(--text)', marginBottom: 4 }}>Gesture Anatomy Reference</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-            Anatomical finger configurations recognized by the tracking engine. Select a category below.
+            Anatomical finger configurations recognized by the tracking engine. Select category below.
           </p>
         </div>
         
-        {/* Category switcher */}
-        <div style={{ display: 'flex', gap: 6 }}>
+        {/* 3D Rocker Category Switcher */}
+        <div className="rocker-switch">
           <button
+            type="button"
             onClick={() => setActiveCategory('animal')}
-            style={{
-              padding: '6px 14px',
-              borderRadius: 4,
-              fontSize: 13,
-              fontWeight: 600,
-              background: activeCategory === 'animal' ? 'var(--accent)' : 'var(--surface)',
-              color: activeCategory === 'animal' ? '#ffffff' : 'var(--text-dim)',
-              borderColor: activeCategory === 'animal' ? 'var(--accent)' : 'var(--border)',
-            }}
+            className={`rocker-button ${activeCategory === 'animal' ? 'active' : ''}`}
           >
-            Animal Silhouettes
+            Animal Formations
           </button>
           <button
+            type="button"
             onClick={() => setActiveCategory('thing')}
-            style={{
-              padding: '6px 14px',
-              borderRadius: 4,
-              fontSize: 13,
-              fontWeight: 600,
-              background: activeCategory === 'thing' ? 'var(--accent)' : 'var(--surface)',
-              color: activeCategory === 'thing' ? '#ffffff' : 'var(--text-dim)',
-              borderColor: activeCategory === 'thing' ? 'var(--accent)' : 'var(--border)',
-            }}
+            className={`rocker-button ${activeCategory === 'thing' ? 'active' : ''}`}
           >
-            Object Silhouettes
+            Object Formations
           </button>
         </div>
       </div>
 
+      {/* 3D Specimen Tile Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-        gap: 16,
+        gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
+        gap: 18,
       }}>
         {filteredGestures.map(([name, info]) => (
-          <div key={name} style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 4,
-            padding: '18px 16px',
-            textAlign: 'center',
-          }}>
-            <h3 style={{ fontSize: 16, color: 'var(--text)', fontWeight: 700 }}>{info.label}</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 4, lineHeight: 1.4, minHeight: 34 }}>{info.description}</p>
+          <div 
+            key={name} 
+            className="card-3d"
+            style={{
+              padding: '20px 16px',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div>
+              <div style={{
+                display: 'inline-block',
+                fontSize: 10,
+                fontWeight: 700,
+                color: 'var(--accent-orange)',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                padding: '2px 8px',
+                borderRadius: 2,
+                background: 'rgba(217, 119, 6, 0.1)',
+                border: '1px solid rgba(217, 119, 6, 0.25)',
+                marginBottom: 8,
+              }}>
+                SPECIMEN ID: {name.toUpperCase()}
+              </div>
+              <h3 style={{ fontSize: 17, color: 'var(--text)', fontWeight: 700, margin: '0 0 6px 0' }}>
+                {info.label}
+              </h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: 12, margin: 0, lineHeight: 1.4, minHeight: 34 }}>
+                {info.description}
+              </p>
+            </div>
 
             <FingerDiagram name={name} />
 
-            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
+            <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
               {FINGER_GUIDES[name]?.map(({ finger, state }) => (
                 <span key={finger} style={{
-                  fontSize: 10,
+                  fontSize: 9,
                   padding: '2px 6px',
                   borderRadius: 2,
-                  background: state === 'DOWN' ? 'transparent' : 'var(--surface-hover)',
+                  background: state === 'DOWN' ? 'var(--bg)' : 'rgba(217, 119, 6, 0.12)',
                   color: state === 'DOWN' ? 'var(--text-muted)' : 'var(--text)',
-                  border: '1px solid var(--border)',
-                  fontWeight: 600
+                  border: '1px solid',
+                  borderColor: state === 'DOWN' ? 'var(--border)' : 'rgba(217, 119, 6, 0.3)',
+                  fontWeight: 600,
                 }}>
                   {finger}: {state}
                 </span>
@@ -263,14 +278,12 @@ export default function Gallery() {
         ))}
       </div>
 
-      <div style={{
-        padding: 16,
-        background: 'var(--surface)',
-        borderRadius: 4,
-        border: '1px solid var(--border)',
-      }}>
-        <h3 style={{ fontSize: 14, marginBottom: 6, color: 'var(--text)' }}>Tracking Guidelines</h3>
-        <ul style={{ color: 'var(--text-dim)', fontSize: 13, lineHeight: 1.6, paddingLeft: 18 }}>
+      {/* 3D Mechanical Instruction Chassis */}
+      <div className="card-3d" style={{ padding: 20 }}>
+        <h3 style={{ fontSize: 15, marginBottom: 8, color: 'var(--text)', fontWeight: 700 }}>
+          Optical Calibration Guidelines
+        </h3>
+        <ul style={{ color: 'var(--text-dim)', fontSize: 13, lineHeight: 1.6, paddingLeft: 18, margin: 0 }}>
           <li>Position your hand approximately 30 to 60 cm directly in front of the webcam.</li>
           <li>Ensure adequate ambient room lighting facing your hand to prevent camera motion blur.</li>
           <li>Keep fingers separated clearly when casting multi-finger figures such as the Rabbit or Bird.</li>

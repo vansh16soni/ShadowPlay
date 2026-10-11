@@ -1,12 +1,90 @@
 const API_URL = import.meta.env.VITE_API_URL || ''
 
 async function apiFetch(path, options = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+  }
+
+  // Include session token or admin key if stored
+  const token = localStorage.getItem('shadowplay_auth_token')
+  const adminKey = localStorage.getItem('shadowplay_admin_key')
+
+  if (token && !headers['Authorization'] && !headers['x-session-token']) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  if (adminKey && !headers['x-admin-key']) {
+    headers['x-admin-key'] = adminKey
+  }
+
   const res = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
     ...options,
+    headers,
   })
-  if (!res.ok) throw new Error(`API error ${res.status}`)
-  return res.json()
+
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    const errorMsg = data.error || `Request failed with status ${res.status}`
+    const error = new Error(errorMsg)
+    error.status = res.status
+    error.data = data
+    throw error
+  }
+  return data
+}
+
+// ── Authentication ──
+
+export async function registerUser({ name, email, password }) {
+  return await apiFetch('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ name, email, password }),
+  })
+}
+
+export async function loginUser({ name, email, password }) {
+  return await apiFetch('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ name, email, password }),
+  })
+}
+
+export async function verifyCurrentSession() {
+  const token = localStorage.getItem('shadowplay_auth_token')
+  if (!token) return null
+  try {
+    return await apiFetch('/api/auth/me')
+  } catch {
+    localStorage.removeItem('shadowplay_auth_token')
+    localStorage.removeItem('shadowplay_admin_key')
+    return null
+  }
+}
+
+// ── Admin Functions ──
+
+export async function getAdminUsers(customKey) {
+  const headers = customKey ? { 'x-admin-key': customKey } : {}
+  return await apiFetch('/api/admin/users', { headers })
+}
+
+export async function getAdminUserSessions(guestId, customKey) {
+  const headers = customKey ? { 'x-admin-key': customKey } : {}
+  return await apiFetch(`/api/admin/user/${guestId}/sessions`, { headers })
+}
+
+export async function toggleUserSuspension(guestId, isSuspended, customKey) {
+  const headers = customKey ? { 'x-admin-key': customKey } : {}
+  return await apiFetch(`/api/admin/user/${guestId}/toggle-suspend`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ isSuspended }),
+  })
+}
+
+export async function getAdminHealth(customKey) {
+  const headers = customKey ? { 'x-admin-key': customKey } : {}
+  return await apiFetch('/api/admin/health', { headers })
 }
 
 // ── Challenge ──
@@ -17,7 +95,8 @@ export async function startChallenge(guestId) {
       method: 'POST',
       body: JSON.stringify({ guestId }),
     })
-  } catch {
+  } catch (err) {
+    if (err.status === 403) throw err
     const sessionId = crypto.randomUUID()
     return { sessionId, offline: true }
   }
@@ -43,10 +122,10 @@ export async function saveScore(guestId, score) {
     })
     synced = true
   } catch (err) {
+    if (err.status === 403) throw err
     // offline fallback
   }
 
-  // Preserve in localStorage as local fallback (deduplicated by guestId with highest score)
   const existing = JSON.parse(localStorage.getItem('shadowplay_scores') || '[]')
   const foundIndex = existing.findIndex(entry => entry.guestId === guestId)
   if (foundIndex >= 0) {
@@ -88,13 +167,12 @@ export async function syncOfflineScores() {
   }
 }
 
-// ── Leaderboard ──
+// ── Leaderboard & Stats ──
 
 export async function getLeaderboard(limit = 10) {
   try {
     return await apiFetch(`/api/leaderboard?limit=${limit}`)
   } catch {
-    // Fallback: localStorage deduplicated by guestId
     const stored = JSON.parse(localStorage.getItem('shadowplay_scores') || '[]')
     const unique = []
     const seen = new Set()

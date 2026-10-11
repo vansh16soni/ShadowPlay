@@ -8,13 +8,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-webcam": "^7.2.0",
-    "@mediapipe/hands": "^0.4.1675469240",
     "@mediapipe/camera_utils": "^0.3.1675466862",
     "@mediapipe/drawing_utils": "^0.3.1675466124",
-    "uuid": "^9.0.0"
+    "@mediapipe/hands": "^0.4.1675469240",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-webcam": "^7.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",

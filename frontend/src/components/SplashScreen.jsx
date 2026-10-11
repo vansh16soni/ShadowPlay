@@ -87,7 +87,7 @@ export default function SplashScreen({ onPlayClick }) {
         width: '100%',
         textAlign: 'left'
       }}>
-        <div className="glass-panel" style={{ padding: 20 }}>
+        <div className="card-3d" style={{ padding: 20 }}>
           <div style={{ color: 'var(--accent-orange)', marginBottom: 10 }}>
             <PracticeIcon size={22} />
           </div>
@@ -99,7 +99,7 @@ export default function SplashScreen({ onPlayClick }) {
           </p>
         </div>
 
-        <div className="glass-panel" style={{ padding: 20 }}>
+        <div className="card-3d" style={{ padding: 20 }}>
           <div style={{ color: 'var(--accent-orange)', marginBottom: 10 }}>
             <QuestIcon size={22} />
           </div>
@@ -111,7 +111,7 @@ export default function SplashScreen({ onPlayClick }) {
           </p>
         </div>
 
-        <div className="glass-panel" style={{ padding: 20 }}>
+        <div className="card-3d" style={{ padding: 20 }}>
           <div style={{ color: 'var(--accent-orange)', marginBottom: 10 }}>
             <TimerIcon size={22} />
           </div>

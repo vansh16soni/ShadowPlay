@@ -1,15 +1,30 @@
-const { v4: uuidv4 } = require('uuid')
+const { randomUUID } = require('crypto')
 const { User, Session, Attempt } = require('../models')
+const {
+  isValidGuestId,
+  isValidUUID,
+  isValidGesture,
+  clampScore,
+} = require('../middleware/sanitize')
 
 // POST /api/challenge/start
 async function startChallenge(req, res) {
   try {
     const { guestId } = req.body
-    if (!guestId) return res.status(400).json({ error: 'guestId is required' })
 
-    const sessionId = uuidv4()
+    if (!isValidGuestId(guestId)) {
+      return res.status(400).json({ error: 'Valid guestId is required' })
+    }
 
-    // Ensure user exists
+    // Check if user is suspended
+    const existingUser = await User.findOne({ guestId })
+    if (existingUser && existingUser.isSuspended) {
+      return res.status(403).json({ error: 'Operative account suspended. Challenge locked.' })
+    }
+
+    const sessionId = randomUUID()
+
+    // Ensure operative record exists
     await User.findOneAndUpdate(
       { guestId },
       { $setOnInsert: { guestId, totalScore: 0 } },
@@ -24,7 +39,7 @@ async function startChallenge(req, res) {
 
     res.json({ sessionId })
   } catch (err) {
-    console.error('startChallenge error:', err)
+    console.error('startChallenge error:', err.message)
     res.status(500).json({ error: 'Failed to start challenge' })
   }
 }
@@ -32,20 +47,52 @@ async function startChallenge(req, res) {
 // POST /api/challenge/attempt
 async function submitAttempt(req, res) {
   try {
-    const { sessionId, gesturePrompt, userGesture, isCorrect, timeTakenMs } = req.body
-    if (!sessionId || !gesturePrompt) {
-      return res.status(400).json({ error: 'sessionId and gesturePrompt are required' })
+    const { sessionId, gesturePrompt, userGesture, isCorrect, timeTakenMs, points } = req.body
+
+    if (!isValidUUID(sessionId)) {
+      return res.status(400).json({ error: 'Valid sessionId UUID is required' })
     }
+
+    if (!gesturePrompt || typeof gesturePrompt !== 'string' || gesturePrompt.length > 50) {
+      return res.status(400).json({ error: 'Valid gesturePrompt is required' })
+    }
+
+    // Verify session actually exists
+    const existingSession = await Session.findOne({ sessionId })
+    if (!existingSession) {
+      return res.status(404).json({ error: 'Session not found or expired' })
+    }
+
+    // Check if user is suspended
+    const sessionUser = await User.findOne({ guestId: existingSession.guestId })
+    if (sessionUser && sessionUser.isSuspended) {
+      return res.status(403).json({ error: 'Operative account suspended.' })
+    }
+
+    // Sanitize userGesture
+    const cleanGesture = typeof userGesture === 'string' && userGesture.length <= 50 ? userGesture : 'none'
+
+    // Clean timeTakenMs
+    const cleanTime = (typeof timeTakenMs === 'number' && timeTakenMs >= 0 && timeTakenMs <= 300000)
+      ? Math.floor(timeTakenMs)
+      : null
 
     await Attempt.create({
       sessionId,
-      gesturePrompt,
-      userGesture: userGesture || 'none',
-      isCorrect: !!isCorrect,
-      timeTakenMs: timeTakenMs || null,
+      gesturePrompt: gesturePrompt.slice(0, 50),
+      userGesture: cleanGesture,
+      isCorrect: Boolean(isCorrect),
+      timeTakenMs: cleanTime,
     })
 
-    const pointsToAdd = typeof req.body.points === 'number' ? req.body.points : (isCorrect ? 10 : 0)
+    // Sane bounding on points to prevent spoofing: max 100 pts per attempt
+    let pointsToAdd = 0
+    if (typeof points === 'number' && Number.isFinite(points)) {
+      pointsToAdd = Math.max(0, Math.min(100, Math.floor(points)))
+    } else if (isCorrect) {
+      pointsToAdd = 10
+    }
+
     if (pointsToAdd > 0) {
       await Session.updateOne(
         { sessionId },
@@ -53,10 +100,10 @@ async function submitAttempt(req, res) {
       )
     }
 
-    const session = await Session.findOne({ sessionId })
-    res.json({ ok: true, runningScore: session?.finalScore || 0 })
+    const updatedSession = await Session.findOne({ sessionId })
+    res.json({ ok: true, runningScore: updatedSession?.finalScore || 0 })
   } catch (err) {
-    console.error('submitAttempt error:', err)
+    console.error('submitAttempt error:', err.message)
     res.status(500).json({ error: 'Failed to submit attempt' })
   }
 }
@@ -65,29 +112,41 @@ async function submitAttempt(req, res) {
 async function saveScore(req, res) {
   try {
     const { guestId, score } = req.body
-    if (!guestId || typeof score !== 'number') {
-      return res.status(400).json({ error: 'guestId and numeric score required' })
+
+    if (!isValidGuestId(guestId)) {
+      return res.status(400).json({ error: 'Valid guestId is required' })
+    }
+
+    // Check if user is suspended
+    const existingUser = await User.findOne({ guestId })
+    if (existingUser && existingUser.isSuspended) {
+      return res.status(403).json({ error: 'Operative account suspended. Score cannot be recorded.' })
+    }
+
+    const validatedScore = clampScore(score)
+    if (validatedScore === null) {
+      return res.status(400).json({ error: 'Valid non-negative numeric score required' })
     }
 
     const user = await User.findOneAndUpdate(
       { guestId },
       {
         $setOnInsert: { guestId },
-        $max: { totalScore: score },
+        $max: { totalScore: validatedScore },
       },
       { upsert: true, new: true }
     )
 
-    // Close out the most recent open session for this guest
+    // Close out open sessions for this operative
     await Session.findOneAndUpdate(
       { guestId, endTime: { $exists: false } },
-      { endTime: new Date(), finalScore: score },
+      { endTime: new Date(), finalScore: validatedScore },
       { sort: { startTime: -1 } }
     )
 
     res.json({ ok: true, totalScore: user.totalScore })
   } catch (err) {
-    console.error('saveScore error:', err)
+    console.error('saveScore error:', err.message)
     res.status(500).json({ error: 'Failed to save score' })
   }
 }
@@ -96,11 +155,23 @@ async function saveScore(req, res) {
 async function getUserStats(req, res) {
   try {
     const { guestId } = req.params
+
+    if (!isValidGuestId(guestId)) {
+      return res.status(400).json({ error: 'Valid guestId parameter required' })
+    }
+
     const user = await User.findOne({ guestId })
-    const sessions = await Session.find({ guestId }).sort({ startTime: -1 }).limit(20)
+    const sessions = await Session.find({ guestId })
+      .sort({ startTime: -1 })
+      .limit(20)
+      .select('sessionId finalScore startTime endTime -_id')
 
     res.json({
       guestId,
+      name: user?.name,
+      email: user?.email,
+      role: user?.role || 'user',
+      isSuspended: user?.isSuspended || false,
       totalScore: user?.totalScore || 0,
       sessions: sessions.length,
       history: sessions.map(s => ({
@@ -111,7 +182,7 @@ async function getUserStats(req, res) {
       })),
     })
   } catch (err) {
-    console.error('getUserStats error:', err)
+    console.error('getUserStats error:', err.message)
     res.status(500).json({ error: 'Failed to fetch user stats' })
   }
 }

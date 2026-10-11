@@ -5,60 +5,70 @@
   --font-mono: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
-/* Dark Theme (Default) - Clean Slate & Editorial Contrast */
+/* Dark Theme (Default) - Authentic Analog Optical Studio / Obsidian Noir */
 :root, [data-theme="dark"] {
-  --bg: #0b1120;
-  --surface: #131d31;
-  --surface-hover: #1c2944;
-  --surface-active: #233454;
-  --border: #263550;
-  --border-focus: #3b82f6;
+  --bg: #090c12;
+  --surface: #121622;
+  --surface-hover: #192030;
+  --surface-active: #222b40;
+  --border: #242c3e;
+  --border-light: rgba(255, 255, 255, 0.12);
+  --border-dark: #07090e;
+  --border-focus: #d97706;
 
-  --nav-bg: rgba(11, 17, 32, 0.95);
-  --sidebar-bg: #0e1629;
-  --bg-card: #131d31;
+  --nav-bg: rgba(9, 12, 18, 0.96);
+  --sidebar-bg: #0c0f16;
+  --bg-card: #121622;
 
   --text: #f8fafc;
   --text-dim: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-muted: #8b9bb4;
 
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
+  --accent: #d97706;
+  --accent-hover: #b45309;
   --accent-orange: #d97706;
-  --accent-gold: #d97706;
-  --accent-green: #16a34a;
-  --accent-red: #dc2626;
+  --accent-gold: #eab308;
+  --accent-green: #10b981;
+  --accent-red: #ef4444;
 
-  --panel-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --panel-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.6), 0 2px 6px -1px rgba(0, 0, 0, 0.4);
+  --panel-shadow-deep: 0 24px 50px -12px rgba(0, 0, 0, 0.8), 0 8px 18px -4px rgba(0, 0, 0, 0.5);
+  --panel-3d-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  
   --button-radius: 4px;
   --card-radius: 6px;
 }
 
-/* Light Theme - Clean Warm Stone */
+/* Light Theme - Clean Warm Parchment */
 [data-theme="light"] {
-  --bg: #f8fafc;
+  --bg: #f5f3ef;
   --surface: #ffffff;
-  --surface-hover: #f1f5f9;
-  --surface-active: #e2e8f0;
-  --border: #cbd5e1;
-  --border-focus: #2563eb;
+  --surface-hover: #eae6df;
+  --surface-active: #dfd9cf;
+  --border: #d3ccc0;
+  --border-light: rgba(255, 255, 255, 0.8);
+  --border-dark: #b8b0a2;
+  --border-focus: #b45309;
 
-  --nav-bg: rgba(248, 250, 252, 0.98);
-  --sidebar-bg: #ffffff;
+  --nav-bg: rgba(245, 243, 239, 0.98);
+  --sidebar-bg: #f9f8f5;
   --bg-card: #ffffff;
 
-  --text: #0f172a;
-  --text-dim: #334155;
-  --text-muted: #64748b;
+  --text: #191c21;
+  --text-dim: #3a424e;
+  --text-muted: #6b7280;
 
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
+  --accent: #b45309;
+  --accent-hover: #92400e;
   --accent-orange: #b45309;
-  --accent-gold: #b45309;
-  --accent-green: #15803d;
-  --accent-red: #b91c1c;
+  --accent-gold: #ca8a04;
+  --accent-green: #059669;
+  --accent-red: #dc2626;
 
-  --panel-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08);
+  --panel-shadow: 0 4px 14px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --panel-shadow-deep: 0 16px 32px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.06);
+  --panel-3d-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+
   --button-radius: 4px;
   --card-radius: 6px;
 }
@@ -85,6 +95,13 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.25;
 }
 
+/* Mechanical Focus Outline */
+:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Base Buttons */
 button {
   cursor: pointer;
   border: 1px solid var(--border);
@@ -95,17 +112,12 @@ button {
   font-size: 13px;
   font-weight: 600;
   padding: 8px 14px;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease, transform 0.08s ease, box-shadow 0.08s ease;
 }
 
 button:hover:not(:disabled) {
   background: var(--surface-hover);
   border-color: var(--border-focus);
-}
-
-button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
 }
 
 button:disabled {
@@ -126,7 +138,7 @@ button:disabled {
   text-decoration: underline;
 }
 
-/* Button Classes */
+/* ── 3D TACTILE BUTTON SYSTEM ── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -136,27 +148,41 @@ button:disabled {
   font-weight: 600;
   border-radius: var(--button-radius);
   padding: 8px 16px;
-  border: 1px solid transparent;
+  border: 1px solid var(--border);
   cursor: pointer;
   text-decoration: none;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  box-shadow: 0 3px 0 var(--border-dark), 0 4px 8px rgba(0, 0, 0, 0.35);
+  transition: transform 0.06s ease, box-shadow 0.06s ease, background-color 0.12s ease;
+}
+
+.btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--border-dark), 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .btn-primary {
-  background: var(--accent);
+  background: var(--accent-orange);
   color: #ffffff;
-  border-color: var(--accent);
+  border-color: rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 3px 0 #8c4c06, 0 6px 14px rgba(217, 119, 6, 0.35);
 }
 
 .btn-primary:hover {
   background: var(--accent-hover);
-  border-color: var(--accent-hover);
+}
+
+.btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #8c4c06, 0 2px 6px rgba(217, 119, 6, 0.35);
 }
 
 .btn-secondary {
   background: var(--surface);
   color: var(--text);
   border-color: var(--border);
+  border-top-color: var(--border-light);
+  box-shadow: 0 3px 0 var(--border-dark), 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .btn-secondary:hover {
@@ -164,21 +190,113 @@ button:disabled {
   border-color: var(--border-focus);
 }
 
-/* Clean Professional Panels */
-.content-panel, .glass-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--card-radius);
-  box-shadow: var(--panel-shadow);
+.btn-secondary:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--border-dark), 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-/* Live Status Dot */
+/* ── 3D PANELS & CARDS ── */
+.glass-panel, .content-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 2px solid var(--border-dark);
+  border-radius: var(--card-radius);
+  box-shadow: var(--panel-shadow);
+  position: relative;
+}
+
+/* 3D Elevated Card with Hover Tilt Relief */
+.card-3d {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 3px solid var(--border-dark);
+  border-radius: var(--card-radius);
+  box-shadow: var(--panel-shadow-deep);
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s ease;
+  transform-style: preserve-3d;
+}
+
+.card-3d:hover {
+  transform: translateY(-2px) translateZ(6px);
+  box-shadow: 0 28px 56px -12px rgba(0, 0, 0, 0.85), 0 10px 20px -4px rgba(0, 0, 0, 0.6);
+}
+
+/* ── 3D CHASSIS & RACK CONTAINERS ── */
+.chassis-3d {
+  background: var(--sidebar-bg);
+  border: 1px solid var(--border);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 2px solid var(--border-dark);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* 3D Mechanical Rocker Segment */
+.rocker-switch {
+  display: flex;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px;
+  gap: 3px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.rocker-button {
+  flex: 1;
+  padding: 7px 14px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  box-shadow: none;
+  transition: all 0.1s ease;
+}
+
+.rocker-button.active {
+  background: var(--surface);
+  color: var(--accent-orange);
+  border-color: var(--border);
+  border-top-color: var(--border-light);
+  box-shadow: 0 2px 0 var(--border-dark), 0 4px 8px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.rocker-button:not(.active):hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* 3D Physical Extruded Meters */
+.meter-3d {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  height: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.7);
+  position: relative;
+}
+
+.meter-3d-fill {
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.2), transparent), var(--accent-orange);
+  box-shadow: 0 0 8px rgba(217, 119, 6, 0.5);
+  transition: width 0.25s ease-out;
+}
+
+/* Live Status Dot with 3D Diode Bulb */
 .live-status-dot, .live-dot {
   width: 8px;
   height: 8px;
   background-color: var(--accent-green);
   border-radius: 50%;
   display: inline-block;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.8), inset 0 1px 2px rgba(255,255,255,0.6);
+  border: 1px solid rgba(0, 0, 0, 0.4);
 }
 
 /* Accessibility: Respect Reduced Motion */
@@ -191,7 +309,7 @@ button:disabled {
   }
 }
 
-/* Custom Scrollbar - Subdued */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -202,4 +320,5 @@ button:disabled {
 ::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 3px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
 }

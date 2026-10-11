@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import WebcamFeed from './components/WebcamFeed'
 import ShadowCanvas from './components/ShadowCanvas'
+import Stage3D from './components/Stage3D'
 import Gallery from './components/Gallery'
 import Leaderboard from './components/Leaderboard'
 import Header from './components/Header'
@@ -14,10 +15,12 @@ import TermsAndConditions from './components/TermsAndConditions'
 import CookiePolicy from './components/CookiePolicy'
 import CookieBanner from './components/CookieBanner'
 import NotFound from './components/NotFound'
+import AuthModal from './components/AuthModal'
+import AdminDashboard from './components/AdminDashboard'
 import { PracticeIcon, QuestIcon, TimerIcon, ExitIcon } from './components/Icons'
 import { GESTURE_INFO, GESTURE_NAMES, GESTURE_ANIMALS, GESTURE_THINGS } from './utils/gestureClassifier'
 import { playGestureChange, playSuccess, playError, playChallengStart, resumeAudio } from './utils/sounds'
-import { startChallenge, saveScore, submitAttempt, syncOfflineScores } from './utils/api'
+import { startChallenge, saveScore, submitAttempt, syncOfflineScores, verifyCurrentSession } from './utils/api'
 
 // Stable guest ID persisted across sessions
 function getGuestId() {
@@ -127,6 +130,7 @@ export default function App() {
       '/privacy': 'Privacy Policy (India DPDP Act Compliant) | ShadowPlay',
       '/terms': 'Terms and Conditions | ShadowPlay',
       '/cookies': 'Cookie and Storage Policy | ShadowPlay',
+      '/admin': 'Administration Portal | ShadowPlay',
     }
     document.title = titles[currentPath] || 'Page Not Found (404) | ShadowPlay'
     
@@ -144,9 +148,46 @@ export default function App() {
     if (currentPath === '/privacy') return 'privacy'
     if (currentPath === '/terms') return 'terms'
     if (currentPath === '/cookies') return 'cookies'
+    if (currentPath === '/admin') return 'admin'
     return 'dashboard'
   }
   
+  // Operative User & Auth State
+  const [currentUser, setCurrentUser] = useState(() => {
+    const cached = localStorage.getItem('shadowplay_user_profile')
+    try { return cached ? JSON.parse(cached) : null } catch { return null }
+  })
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+
+  // Validate active session with backend
+  useEffect(() => {
+    verifyCurrentSession().then(res => {
+      if (res && res.user) {
+        setCurrentUser(res.user)
+        localStorage.setItem('shadowplay_user_profile', JSON.stringify(res.user))
+      } else {
+        setCurrentUser(null)
+        localStorage.removeItem('shadowplay_user_profile')
+      }
+    }).catch(() => {})
+  }, [])
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('shadowplay_auth_token')
+    localStorage.removeItem('shadowplay_admin_key')
+    localStorage.removeItem('shadowplay_user_profile')
+    setCurrentUser(null)
+    if (currentPath === '/admin') navigate('/')
+  }, [currentPath, navigate])
+
+  const handleAuthSuccess = useCallback((user) => {
+    setCurrentUser(user)
+    localStorage.setItem('shadowplay_user_profile', JSON.stringify(user))
+    if (user.role === 'admin') {
+      navigate('/admin')
+    }
+  }, [navigate])
+
   // Theme State
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('shadowplay_theme') || 'dark'
@@ -574,14 +615,19 @@ export default function App() {
   }, [category, resetAllModes, navigate]) // eslint-disable-line
 
   // Route: 404 handler
-  const knownPaths = ['/', '/guide', '/battle', '/speedrun', '/leaderboard', '/about', '/privacy', '/terms', '/cookies']
+  const knownPaths = ['/', '/guide', '/battle', '/speedrun', '/leaderboard', '/about', '/privacy', '/terms', '/cookies', '/admin']
   const is404 = !knownPaths.includes(currentPath)
+  const effectiveGuestId = currentUser?.guestId || GUEST_ID
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       {/* ── HEADER ── */}
       <Header 
-        guestId={GUEST_ID}
+        guestId={effectiveGuestId}
+        user={currentUser}
+        onOpenAuth={() => setAuthModalOpen(true)}
+        onOpenAdmin={() => navigate('/admin')}
+        onLogout={handleLogout}
         theme={theme}
         setTheme={setTheme}
         voiceEnabled={voiceEnabled}
@@ -593,7 +639,7 @@ export default function App() {
       {/* ── CORE WRAPPER (SIDEBAR + MAIN CONTENT) ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
         {/* ── SIDEBAR NAVIGATION ── */}
-        <Sidebar activeTab={getActiveTab()} onNavigate={navigate} />
+        <Sidebar activeTab={getActiveTab()} onNavigate={navigate} user={currentUser} />
 
         {/* ── MAIN CONTENT CONTAINER ── */}
         <main style={{ flex: 1, padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 20, overflowY: 'auto' }}>
@@ -679,6 +725,75 @@ export default function App() {
             </div>
           )}
 
+          {/* ADMINISTRATION PORTAL */}
+          {currentPath === '/admin' && (
+            currentUser?.role === 'admin' ? (
+              <AdminDashboard onClose={() => navigate('/')} currentUser={currentUser} />
+            ) : (
+              <div
+                className="depth-plate"
+                style={{
+                  padding: '44px 36px',
+                  maxWidth: 560,
+                  margin: '40px auto',
+                  textAlign: 'center',
+                  borderRadius: 16,
+                  background: 'linear-gradient(165deg, #161c2a 0%, #0d121c 100%)',
+                  border: '1px solid rgba(255, 255, 255, 0.14)',
+                  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                  color: '#ffffff',
+                }}
+              >
+                <div style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.14em', color: '#f59e0b', marginBottom: 8 }}>
+                  RESTRICTED ACCESS FACILITY
+                </div>
+                <h2 style={{ fontSize: '24px', fontWeight: 900, margin: '0 0 14px 0', color: '#ffffff', letterSpacing: '-0.02em' }}>
+                  ADMINISTRATION PORTAL
+                </h2>
+                <p style={{ color: '#cbd5e1', fontSize: '14px', lineHeight: 1.6, margin: '0 0 28px 0' }}>
+                  This subsystem requires verified administrative clearance. Please sign in with administrator credentials to manage operatives and inspect telemetry.
+                </p>
+                <div style={{ display: 'flex', gap: 14, justifyContent: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => setAuthModalOpen(true)}
+                    className="depth-button primary-depth"
+                    style={{
+                      padding: '12px 26px',
+                      fontSize: '13px',
+                      fontWeight: 800,
+                      background: 'linear-gradient(180deg, #f59e0b 0%, #d97706 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: 8,
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 0 #92400e, 0 6px 16px rgba(217, 119, 6, 0.4)',
+                    }}
+                  >
+                    SIGN IN TO ACCESS
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/')}
+                    className="depth-button"
+                    style={{
+                      padding: '12px 22px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      background: '#1a2233',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      color: '#ffffff',
+                      borderRadius: 8,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    RETURN TO STUDIO
+                  </button>
+                </div>
+              </div>
+            )
+          )}
+
           {/* DASHBOARD / STUDIO / BATTLE / SPEEDRUN VIEW */}
           {(currentPath === '/' || currentPath === '/battle' || currentPath === '/speedrun') && (
             <>
@@ -690,203 +805,109 @@ export default function App() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                   
-                  {/* Top Camera & Shadow Projection Area */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-                    gap: 20,
-                    width: '100%'
-                  }}>
-                    {/* Camera Feed */}
-                    <div className="glass-panel" style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', margin: 0 }}>Camera Video Feed</h2>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span className="live-dot" />
-                          <span style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.04em', fontWeight: 600 }}>ACTIVE</span>
-                        </div>
-                      </div>
-                      <WebcamFeed onHandResult={handleHandResult} />
-                    </div>
+                  {/* Dynamic 3D Optical Theatre Stage */}
+                  <Stage3D
+                    gesture={gesture}
+                    center={center}
+                    flash={flash}
+                    gestureInfo={gesture ? GESTURE_INFO[gesture] : null}
+                    onHandResult={handleHandResult}
+                    targetGesture={gameMode === 'battle' ? battleVulnerability : gameMode === 'speedrun' ? speedTarget : null}
+                  />
 
-                    {/* Shadow Projection */}
-                    <div className="glass-panel" style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', margin: 0 }}>Shadow Projection Wall</h2>
-                        <span style={{
-                          fontSize: 11,
-                          color: gesture ? GESTURE_INFO[gesture]?.color : 'var(--text-muted)',
-                          fontWeight: 600,
-                          background: 'var(--bg-card)',
-                          padding: '2px 8px',
-                          borderRadius: 4,
-                          border: '1px solid var(--border)',
-                          letterSpacing: '0.04em'
-                        }}>
-                          {gesture ? GESTURE_INFO[gesture]?.label.toUpperCase() : 'SEARCHING FOR HAND'}
-                        </span>
-                      </div>
-                      <ShadowCanvas gesture={gesture} center={center} flash={flash} />
-                    </div>
-                  </div>
-
-                  {/* Controller & Practice Panel */}
-                  <div className="glass-panel" style={{ padding: 20 }}>
+                  {/* Controller & Practice Panel with 3D Depth */}
+                  <div className="card-3d" style={{ padding: 22 }}>
                     {/* Category Selector Bar */}
                     <div style={{
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      marginBottom: 16,
+                      marginBottom: 18,
                       flexWrap: 'wrap',
                       gap: 12,
                       borderBottom: '1px solid var(--border)',
-                      paddingBottom: 14
+                      paddingBottom: 16
                     }}>
                       <div>
-                        <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: 0 }}>Gesture Library Filter</h3>
+                        <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', margin: 0 }}>Gesture Library Filter</h3>
                         <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0 0' }}>Filter active targets by classification category.</p>
                       </div>
-                      <div style={{
-                        display: 'flex',
-                        background: 'var(--bg-card)',
-                        border: '1px solid var(--border)',
-                        borderRadius: 4,
-                        padding: 2,
-                        gap: 2
-                      }}>
+                      <div className="rocker-switch">
                         <button 
                           type="button"
                           onClick={() => setCategory('animals')}
-                          style={{
-                            padding: '6px 12px',
-                            borderRadius: 4,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            background: category === 'animals' ? 'var(--accent-orange)' : 'transparent',
-                            color: category === 'animals' ? '#ffffff' : 'var(--text-dim)',
-                            border: 'none',
-                            cursor: 'pointer'
-                          }}
+                          className={`rocker-button ${category === 'animals' ? 'active' : ''}`}
                         >
                           Animals
                         </button>
                         <button 
                           type="button"
                           onClick={() => setCategory('things')}
-                          style={{
-                            padding: '6px 12px',
-                            borderRadius: 4,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            background: category === 'things' ? 'var(--accent-orange)' : 'transparent',
-                            color: category === 'things' ? '#ffffff' : 'var(--text-dim)',
-                            border: 'none',
-                            cursor: 'pointer'
-                          }}
+                          className={`rocker-button ${category === 'things' ? 'active' : ''}`}
                         >
                           Objects
                         </button>
                         <button 
                           type="button"
                           onClick={() => setCategory('all')}
-                          style={{
-                            padding: '6px 12px',
-                            borderRadius: 4,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            background: category === 'all' ? 'var(--accent-orange)' : 'transparent',
-                            color: category === 'all' ? '#ffffff' : 'var(--text-dim)',
-                            border: 'none',
-                            cursor: 'pointer'
-                          }}
+                          className={`rocker-button ${category === 'all' ? 'active' : ''}`}
                         >
                           All Gestures
                         </button>
                       </div>
                     </div>
 
-                    {/* Mode Navigation Tabs */}
+                    {/* Mode Navigation Tabs with 3D Rocker Segment */}
                     <div style={{
                       display: 'flex',
                       borderBottom: '1px solid var(--border)',
                       marginBottom: 20,
-                      gap: 8,
+                      gap: 12,
                       alignItems: 'center',
-                      flexWrap: 'wrap'
+                      flexWrap: 'wrap',
+                      paddingBottom: 16,
                     }}>
-                      <button 
-                        type="button"
-                        onClick={() => { resetAllModes(); navigate('/'); }} 
-                        style={{
-                          padding: '10px 18px',
-                          background: 'none',
-                          color: gameMode === 'free' ? 'var(--accent-orange)' : 'var(--text-dim)',
-                          fontWeight: 600,
-                          fontSize: 14,
-                          border: 'none',
-                          borderBottom: gameMode === 'free' ? '2px solid var(--accent-orange)' : '2px solid transparent',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 8
-                        }}
-                      >
-                        <PracticeIcon size={16} />
-                        <span>Free Practice</span>
-                      </button>
+                      <div className="rocker-switch" style={{ flex: '1 1 360px' }}>
+                        <button 
+                          type="button"
+                          onClick={() => { resetAllModes(); navigate('/'); }} 
+                          className={`rocker-button ${gameMode === 'free' ? 'active' : ''}`}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                        >
+                          <PracticeIcon size={16} />
+                          <span>Free Practice</span>
+                        </button>
 
-                      <button 
-                        type="button"
-                        onClick={() => {
-                          if (gameMode !== 'battle') {
-                            startBattle()
-                          }
-                          navigate('/battle')
-                        }} 
-                        style={{
-                          padding: '10px 18px',
-                          background: 'none',
-                          color: gameMode === 'battle' ? 'var(--accent-orange)' : 'var(--text-dim)',
-                          fontWeight: 600,
-                          fontSize: 14,
-                          border: 'none',
-                          borderBottom: gameMode === 'battle' ? '2px solid var(--accent-orange)' : '2px solid transparent',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 8
-                        }}
-                      >
-                        <QuestIcon size={16} />
-                        <span>Shadow Quest</span>
-                      </button>
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            if (gameMode !== 'battle') {
+                              startBattle()
+                            }
+                            navigate('/battle')
+                          }} 
+                          className={`rocker-button ${gameMode === 'battle' ? 'active' : ''}`}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                        >
+                          <QuestIcon size={16} />
+                          <span>Shadow Quest</span>
+                        </button>
 
-                      <button 
-                        type="button"
-                        onClick={() => {
-                          if (gameMode !== 'speedrun') {
-                            startSpeedrun()
-                          }
-                          navigate('/speedrun')
-                        }} 
-                        style={{
-                          padding: '10px 18px',
-                          background: 'none',
-                          color: gameMode === 'speedrun' ? 'var(--accent-orange)' : 'var(--text-dim)',
-                          fontWeight: 600,
-                          fontSize: 14,
-                          border: 'none',
-                          borderBottom: gameMode === 'speedrun' ? '2px solid var(--accent-orange)' : '2px solid transparent',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 8
-                        }}
-                      >
-                        <TimerIcon size={16} />
-                        <span>Time Attack</span>
-                      </button>
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            if (gameMode !== 'speedrun') {
+                              startSpeedrun()
+                            }
+                            navigate('/speedrun')
+                          }} 
+                          className={`rocker-button ${gameMode === 'speedrun' ? 'active' : ''}`}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                        >
+                          <TimerIcon size={16} />
+                          <span>Time Attack</span>
+                        </button>
+                      </div>
 
                       {/* Right utility buttons */}
                       <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -895,7 +916,7 @@ export default function App() {
                             type="button"
                             onClick={() => { resetAllModes(); navigate('/'); }}
                             className="btn btn-secondary"
-                            style={{ fontSize: 12, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}
+                            style={{ fontSize: 12, padding: '7px 12px', display: 'flex', alignItems: 'center', gap: 6 }}
                           >
                             <ExitIcon size={14} />
                             <span>Exit Mode</span>
@@ -905,7 +926,7 @@ export default function App() {
                           type="button"
                           onClick={() => setIsSetupOpen(true)}
                           className="btn btn-primary"
-                          style={{ fontSize: 12, padding: '6px 14px' }}
+                          style={{ fontSize: 12, padding: '7px 16px' }}
                         >
                           Configure Session
                         </button>
@@ -1047,6 +1068,13 @@ export default function App() {
         isOpen={isSetupOpen}
         onClose={() => setIsSetupOpen(false)}
         onStartGame={handleStartGame}
+      />
+
+      {/* Operative Sign In / Registration Modal */}
+      <AuthModal 
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
       />
     </div>
   )

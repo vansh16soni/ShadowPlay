@@ -15,6 +15,11 @@ build/
 *.env
 *.env.local
 *.local
+**/.env
+**/.env.*
+!**/.env.example
+*.secret*
+*credentials*
 
 # Logs
 npm-debug.log*
